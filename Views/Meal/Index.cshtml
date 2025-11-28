@@ -1,0 +1,56 @@
+﻿
+@model List<Nutriplate.Web.ViewModels.MealListItemViewModel>
+
+@{
+    ViewData["Title"] = "Öğünlerim";
+}
+
+<h2>Öğünlerim</h2>
+
+<a asp-controller="Meal" asp-action="Create" class="btn btn-success mb-3">
+    + Yeni Öğün
+    <a asp-controller="Meal" asp-action="Create" class="btn btn-success mb-3 me-2">
+        + Yeni Öğün (Manuel)
+    </a>
+
+    <a asp-controller="Meal" asp-action="UploadPhoto" class="btn btn-outline-primary mb-3">
+        Fotoğraftan Öğün Ekle
+    </a>
+
+</a>
+
+@if (Model == null || !Model.Any())
+{
+    <p>Henüz kayıtlı öğününüz yok.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Öğün</th>
+                <th>Tarih / Saat</th>
+                <th>Toplam Kalori</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var meal in Model)
+        {
+            <tr>
+                <td>@meal.MealType</td>
+                <td>@meal.MealDateTime.ToString("dd.MM.yyyy HH:mm")</td>
+                <td>@meal.TotalKcal kcal</td>
+                <td>
+                    <a asp-controller="Meal"
+                       asp-action="Details"
+                       asp-route-id="@meal.Id"
+                       class="btn btn-sm btn-outline-primary">
+                        Detay
+                    </a>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}

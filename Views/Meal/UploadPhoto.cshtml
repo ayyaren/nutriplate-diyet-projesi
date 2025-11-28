@@ -1,0 +1,65 @@
+﻿@model Nutriplate.Web.ViewModels.MealPhotoUploadViewModel
+
+@{
+    ViewData["Title"] = "Fotoğraftan Öğün Analizi";
+}
+
+<h2>Fotoğraftan Öğün Analizi</h2>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+<form asp-action="UploadPhoto" method="post" enctype="multipart/form-data">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="mb-3">
+        <label asp-for="Photo" class="form-label"></label>
+        <input asp-for="Photo" class="form-control" type="file" accept="image/*" />
+        <span asp-validation-for="Photo" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Notes" class="form-label"></label>
+        <textarea asp-for="Notes" class="form-control" rows="3"></textarea>
+        <span asp-validation-for="Notes" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Analiz Et</button>
+    <a asp-action="Index" class="btn btn-secondary ms-2">Öğünlerime Dön</a>
+</form>
+
+@if (Model.AnalysisResults != null && Model.AnalysisResults.Any())
+{
+    <hr />
+    <h3>Analiz Sonucu (Örnek)</h3>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Besin</th>
+                <th>Gram</th>
+                <th>Kalori</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.AnalysisResults)
+            {
+                <tr>
+                    <td>@item.FoodName</td>
+                    <td>@item.Gram gr</td>
+                    <td>@item.Kcal kcal</td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <th colspan="2">Toplam</th>
+                <th>@Model.TotalKcal kcal</th>
+            </tr>
+        </tfoot>
+    </table>
+}
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

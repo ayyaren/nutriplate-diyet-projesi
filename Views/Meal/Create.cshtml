@@ -1,0 +1,53 @@
+﻿@model Nutriplate.Web.ViewModels.MealCreateViewModel
+
+@{
+    ViewData["Title"] = "Yeni Öğün";
+}
+
+<h2>Yeni Öğün Ekle</h2>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+<form asp-action="Create" method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="mb-3">
+        <label asp-for="MealType" class="form-label"></label>
+        <select asp-for="MealType" class="form-select">
+            <option value="">Öğün Seçiniz</option>
+            <option value="Kahvaltı">Kahvaltı</option>
+            <option value="Öğle">Öğle</option>
+            <option value="Akşam">Akşam</option>
+            <option value="Ara Öğün">Ara Öğün</option>
+        </select>
+        <span asp-validation-for="MealType" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="MealDateTime" class="form-label"></label>
+        <input asp-for="MealDateTime" class="form-control" type="datetime-local" />
+        <span asp-validation-for="MealDateTime" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="TotalKcal" class="form-label"></label>
+        <input asp-for="TotalKcal" class="form-control" />
+        <span asp-validation-for="TotalKcal" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Notes" class="form-label"></label>
+        <textarea asp-for="Notes" class="form-control" rows="3"></textarea>
+        <span asp-validation-for="Notes" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Kaydet</button>
+    <a asp-action="Index" class="btn btn-secondary ms-2">İptal</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

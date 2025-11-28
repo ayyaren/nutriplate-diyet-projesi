@@ -1,0 +1,87 @@
+﻿@model Nutriplate.Web.ViewModels.DailySummaryViewModel
+
+@{
+    ViewData["Title"] = "Günlük Özet";
+}
+
+<h2>Günlük Özet (@Model.Date.ToString("dd.MM.yyyy"))</h2>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Kalori</h5>
+                <p>Hedef: @Model.TargetKcal kcal</p>
+                <p>Alınan: @Model.TotalKcal kcal</p>
+                <canvas id="calorieChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Makro Dağılımı</h5>
+                <p>Protein: @Model.ProteinGr g</p>
+                <p>Karbonhidrat: @Model.CarbGr g</p>
+                <p>Yağ: @Model.FatGr g</p>
+                <canvas id="macroChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h3>Öğünler</h3>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Öğün</th>
+            <th>Saat</th>
+            <th>Kalori</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var meal in Model.Meals)
+        {
+            <tr>
+                <td>@meal.MealType</td>
+                <td>@meal.MealDateTime.ToString("HH:mm")</td>
+                <td>@meal.TotalKcal kcal</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Kalori chart
+        const ctxCal = document.getElementById('calorieChart');
+        if (ctxCal) {
+            new Chart(ctxCal, {
+                type: 'bar',
+                data: {
+                    labels: ['Alınan', 'Hedef'],
+                    datasets: [{
+                        label: 'Kalori',
+                        data: [@Model.TotalKcal, @Model.TargetKcal],
+                    }]
+                }
+            });
+        }
+
+        // Makro chart (pie)
+        const ctxMacro = document.getElementById('macroChart');
+        if (ctxMacro) {
+            new Chart(ctxMacro, {
+                type: 'pie',
+                data: {
+                    labels: ['Protein', 'Karbonhidrat', 'Yağ'],
+                    datasets: [{
+                        data: [@Model.ProteinGr, @Model.CarbGr, @Model.FatGr],
+                    }]
+                }
+            });
+        }
+    </script>
+}
