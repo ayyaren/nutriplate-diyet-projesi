@@ -1,24 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 
 namespace Nutriplate.Web.ViewModels
 {
-    public class DailySummaryViewModel
+    public class DailySummaryBoxViewModel
     {
-        [DataType(DataType.Date)]
         public DateTime Date { get; set; }
 
         public int TotalKcal { get; set; }
-
         public int TargetKcal { get; set; }
+        public int RemainingKcal => TargetKcal - TotalKcal;
 
         public int ProteinGr { get; set; }
-
         public int CarbGr { get; set; }
-
         public int FatGr { get; set; }
-
-        public List<MealListItemViewModel> Meals { get; set; } = new();
     }
 }

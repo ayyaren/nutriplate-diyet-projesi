@@ -1,0 +1,42 @@
+﻿@model Nutriplate.Web.ViewModels.DailySummaryBoxViewModel
+
+<div class="card mb-3">
+    <div class="card-header">
+        Günlük Özet
+    </div>
+    <div class="card-body">
+        <p class="mb-1">
+            <strong>Tarih:</strong> @Model.Date.ToString("dd.MM.yyyy")
+        </p>
+        <p class="mb-1">
+            <strong>Toplam Alınan Kalori:</strong> @Model.TotalKcal kcal
+        </p>
+        <p class="mb-3">
+            <strong>Hedef Kalori:</strong> @Model.TargetKcal kcal
+        </p>
+
+        @{
+            var percent = Model.TargetKcal > 0
+            ? Math.Min(100, (int)(Model.TotalKcal * 100 / Model.TargetKcal))
+            : 0;
+        }
+
+        <div class="mb-2">
+            <div class="d-flex justify-content-between">
+                <span>Günlük Kalori Doluluk</span>
+                <span>@percent%</span>
+            </div>
+            <div class="progress">
+                <div class="progress-bar" role="progressbar"
+                     style="width:@percent%">
+                </div>
+            </div>
+        </div>
+
+        <hr />
+
+        <p class="mb-1"><strong>Protein:</strong> @Model.ProteinGr g</p>
+        <p class="mb-1"><strong>Karbonhidrat:</strong> @Model.CarbGr g</p>
+        <p class="mb-0"><strong>Yağ:</strong> @Model.FatGr g</p>
+    </div>
+</div>

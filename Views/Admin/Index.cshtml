@@ -1,4 +1,6 @@
-﻿@{
+﻿@model List<Nutriplate.Web.ViewModels.AdminUserViewModel>
+
+@{
     ViewData["Title"] = "Admin Paneli";
 }
 
@@ -6,8 +8,35 @@
 
 <p>Bu sayfaya sadece <strong>Admin</strong> rolündeki kullanıcılar erişebilir.</p>
 
-<ul>
-    <li>Kullanıcı listesini görüntüleme (ileride Ceren'in API'si ile)</li>
-    <li>Diyetisyenleri yönetme</li>
-    <li>Sistem istatistikleri</li>
+<table class="table table-striped mt-3">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Ad Soyad</th>
+            <th>E-posta</th>
+            <th>Rol</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model)
+        {
+            <tr>
+                <td>@user.Id</td>
+                <td>@user.Name</td>
+                <td>@user.Email</td>
+                <td>@user.Role</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<hr />
+
+<p class="text-muted">
+    İleride buraya:
+</p>
+<ul class="text-muted">
+    <li>Kullanıcı listesini Ceren'in Auth API'sinden çekme</li>
+    <li>Diyetisyen rollerini yönetme</li>
+    <li>Sistem istatistikleri için özet kutuları</li>
 </ul>

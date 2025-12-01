@@ -6,10 +6,11 @@ using Nutriplate.Web.ViewModels;
 
 namespace Nutriplate.Web.Controllers
 {
-    // Ceren login akışını bitirdiğinde bunu açacağız:
+    // Ceren login akışını bitirdiğinde açacağız:
     // [Authorize]
     public class MealController : Controller
     {
+        // ---------- ÖĞÜN LİSTESİ (INDEX) ----------
         public IActionResult Index()
         {
             // Şimdilik SAHTE veri (dummy); ileride API'den gelecek.
@@ -35,21 +36,52 @@ namespace Nutriplate.Web.Controllers
                     MealType = "Akşam",
                     MealDateTime = DateTime.Today.AddHours(19),
                     TotalKcal = 700
+                },
+                // ✅ YENİ: Atıştırmalık
+                new MealListItemViewModel
+                {
+                    Id = 4,
+                    MealType = "Atıştırmalık",
+                    MealDateTime = DateTime.Today.AddHours(16), // örnek saat
+                    TotalKcal = 200
                 }
             };
 
             return View(meals);
         }
 
+        // ---------- ÖĞÜN DETAYI (DETAILS) ----------
         public IActionResult Details(int id)
         {
-            // Şimdilik sadece id'yi gösteren basit bir sayfa
-            ViewData["MealId"] = id;
-            return View();
+            // Şimdilik örnek bir öğün detayı
+            var model = new MealDetailViewModel
+            {
+                Id = id,
+                MealType = "Akşam",
+                MealDateTime = DateTime.Today.AddHours(19),
+                TotalKcal = 700,
+                Notes = "Bu öğün şimdilik örnek verilerle gösteriliyor.",
+                Items = new List<MealFoodItemViewModel>
+                {
+                    new MealFoodItemViewModel { FoodName = "Izgara Tavuk",  Gram = 150, Kcal = 250 },
+                    new MealFoodItemViewModel { FoodName = "Pirinç Pilavı", Gram = 120, Kcal = 200 },
+                    new MealFoodItemViewModel { FoodName = "Mevsim Salata", Gram = 80,  Kcal = 50  }
+                }
+            };
+
+            var suggestions = new[]
+            {
+                new { Original = "Pirinç Pilavı", Alternative = "Bulgur Pilavı", Reason = "Daha fazla lif, daha düşük glisemik indeks" },
+                new { Original = "Kızartma",      Alternative = "Izgara / Fırın", Reason = "Daha az yağ, daha az kalori" },
+                new { Original = "Gazlı İçecek",  Alternative = "Su / Ayran",     Reason = "Şeker alımını azaltır" }
+            };
+
+            ViewBag.Suggestions = suggestions;
+
+            return View(model);
         }
 
-        // ---------- YENİ: ÖĞÜN OLUŞTUR (CREATE) ----------
-
+        // ---------- ÖĞÜN OLUŞTUR (CREATE) ----------
         [HttpGet]
         public IActionResult Create()
         {
@@ -68,13 +100,12 @@ namespace Nutriplate.Web.Controllers
                 return View(model);
             }
 
-            // TODO: Burada Ceren'in Node.js API'sine istek atılacak.
-            TempData["Success"] = "Öğün başarıyla kaydedildi (şimdilik sahte kayıt).";
+            TempData["Success"] = "Öğün başarıyla kaydedildi (şimdilik sadece sahte kayıt).";
+
             return RedirectToAction("Index");
         }
 
-        // ---------- YENİ: FOTOĞRAFTAN ÖĞÜN ANALİZİ (UPLOAD PHOTO) ----------
-
+        // ---------- FOTOĞRAF YÜKLEME (UPLOAD PHOTO) ----------
         [HttpGet]
         public IActionResult UploadPhoto()
         {
@@ -85,19 +116,18 @@ namespace Nutriplate.Web.Controllers
         [HttpPost]
         public IActionResult UploadPhoto(MealPhotoUploadViewModel model)
         {
-            if (!ModelState.IsValid)
+            if (!ModelState.IsValid || model.Photo == null)
             {
+                model.ErrorMessage = "Lütfen bir fotoğraf seçin.";
                 return View(model);
             }
 
-            // TODO: Burada fotoğrafı gerçek ML servisine göndereceğiz.
-            // Şimdilik SAHTE analiz sonucu gösteriyoruz.
-
-            model.AnalysisResults = new List<MealPhotoAnalysisItem>
+            // Şimdilik SAHTE analiz sonucu oluşturalım:
+            model.AnalysisResults = new List<MealFoodItemViewModel>
             {
-                new MealPhotoAnalysisItem { FoodName = "Izgara Tavuk", Gram = 150, Kcal = 250 },
-                new MealPhotoAnalysisItem { FoodName = "Pirinç Pilavı", Gram = 120, Kcal = 200 },
-                new MealPhotoAnalysisItem { FoodName = "Salata", Gram = 80, Kcal = 50 }
+                new MealFoodItemViewModel { FoodName = "Izgara Tavuk",  Gram = 150, Kcal = 250 },
+                new MealFoodItemViewModel { FoodName = "Pirinç Pilavı", Gram = 120, Kcal = 200 },
+                new MealFoodItemViewModel { FoodName = "Salata",        Gram = 80,  Kcal = 50  }
             };
 
             TempData["Success"] = "Fotoğraf yüklendi ve örnek analiz gösteriliyor. Daha sonra ML servisi ile gerçek analiz yapılacak.";

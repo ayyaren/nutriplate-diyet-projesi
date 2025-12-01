@@ -2,5 +2,12 @@
     ViewData["Title"] = "Erişim Engellendi";
 }
 
-<h2>Erişim Engellendi</h2>
-<p>Bu sayfaya erişim yetkiniz yok.</p>
+<div class="alert alert-danger mt-4">
+    <h4 class="alert-heading">Erişim Engellendi (403)</h4>
+    <p>Bu sayfaya erişmek için yetkiniz bulunmamaktadır.</p>
+    <hr />
+    <p>
+        Farklı bir hesapla giriş yapmak için
+        <a asp-controller="Account" asp-action="Login">giriş sayfasına</a> gidebilirsiniz.
+    </p>
+</div>

@@ -1,56 +1,172 @@
-﻿
-@model List<Nutriplate.Web.ViewModels.MealListItemViewModel>
+﻿@model List<Nutriplate.Web.ViewModels.MealListItemViewModel>
 
 @{
     ViewData["Title"] = "Öğünlerim";
 }
 
-<h2>Öğünlerim</h2>
+<div class="meal-page">
 
-<a asp-controller="Meal" asp-action="Create" class="btn btn-success mb-3">
-    + Yeni Öğün
-    <a asp-controller="Meal" asp-action="Create" class="btn btn-success mb-3 me-2">
-        + Yeni Öğün (Manuel)
-    </a>
+    <!-- Başlık + açıklama + butonlar -->
+    <div class="meal-header d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div class="mb-2 mb-md-0">
+            <h2 class="meal-title mb-1">Öğünlerim</h2>
+            <p class="meal-subtitle mb-0">
+                Gün içindeki öğünlerini, saatlerini ve kalori dengesini buradan takip et.
+            </p>
+        </div>
 
-    <a asp-controller="Meal" asp-action="UploadPhoto" class="btn btn-outline-primary mb-3">
-        Fotoğraftan Öğün Ekle
-    </a>
+        <div class="meal-header-actions d-flex gap-2">
+            <a asp-action="Create" class="btn btn-success meal-primary-btn">
+                Yeni Öğün (Manuel)
+            </a>
+            <a asp-action="UploadPhoto" class="btn btn-outline-success meal-secondary-btn">
+                Fotoğraftan Öğün Ekle
+            </a>
+        </div>
+    </div>
 
-</a>
+    @if (Model == null || !Model.Any())
+    {
+        <!-- Boş durum kartı -->
+        <div class="meal-empty card border-0">
+            <div class="card-body text-center py-5">
+                <div class="meal-empty-icon mb-3">🥗</div>
+                <h5 class="mb-2">Henüz kayıtlı öğünün yok</h5>
+                <p class="text-muted mb-4">
+                    Güne başlarken kahvaltını ekleyerek kalori ve makro takibine başlayabilirsin.
+                </p>
+                <a asp-action="Create" class="btn btn-success meal-primary-btn">
+                    İlk öğününü ekle
+                </a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- BURASI ARTIK GRID: kartlar yan yana gelecek -->
+        <div class="meal-list">
+            @foreach (var meal in Model)
+            {
+                <partial name="_MealCard" model="meal" />
+            }
+        </div>
+    }
+</div>
 
-@if (Model == null || !Model.Any())
-{
-    <p>Henüz kayıtlı öğününüz yok.</p>
-}
-else
-{
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Öğün</th>
-                <th>Tarih / Saat</th>
-                <th>Toplam Kalori</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-        @foreach (var meal in Model)
-        {
-            <tr>
-                <td>@meal.MealType</td>
-                <td>@meal.MealDateTime.ToString("dd.MM.yyyy HH:mm")</td>
-                <td>@meal.TotalKcal kcal</td>
-                <td>
-                    <a asp-controller="Meal"
-                       asp-action="Details"
-                       asp-route-id="@meal.Id"
-                       class="btn btn-sm btn-outline-primary">
-                        Detay
-                    </a>
-                </td>
-            </tr>
+<style>
+    /* Arka plan */
+    body {
+        background: radial-gradient(circle at top, #e9f9ef 0, #f6fff9 40%, #ffffff 100%);
+    }
+
+    .meal-page {
+        padding-top: 16px;
+    }
+
+    .meal-title {
+        font-weight: 700;
+        font-size: 1.8rem;
+        color: #1b2833;
+    }
+
+    .meal-subtitle {
+        font-size: 0.95rem;
+        color: #60727d;
+    }
+
+    .meal-header-actions .btn {
+        white-space: nowrap;
+    }
+
+    .meal-primary-btn {
+        background: linear-gradient(135deg, #2ecc71, #27ae60);
+        border: none;
+        font-weight: 600;
+        border-radius: 999px;
+        padding-inline: 18px;
+        box-shadow: 0 8px 18px rgba(39, 174, 96, 0.35);
+        transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+    }
+
+        .meal-primary-btn:hover {
+            background: linear-gradient(135deg, #29d66f, #1f9452);
+            transform: translateY(-1px);
+            box-shadow: 0 12px 26px rgba(39, 174, 96, 0.45);
+            color: #fff;
         }
-        </tbody>
-    </table>
-}
+
+    .meal-secondary-btn {
+        font-weight: 500;
+        border-radius: 999px;
+        border-color: #2ecc71;
+        color: #27ae60;
+        padding-inline: 18px;
+    }
+
+        .meal-secondary-btn:hover {
+            background-color: #eafaf0;
+            border-color: #27ae60;
+            color: #1f7f45;
+        }
+
+    /* Boş durum kartı */
+    .meal-empty {
+        max-width: 640px;
+        margin: 0 auto;
+        border-radius: 20px;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.06);
+        background-color: #ffffff;
+    }
+
+    .meal-empty-icon {
+        font-size: 2.4rem;
+    }
+
+    /* ÖĞÜN LİSTESİ → GRID */
+    .meal-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 18px;
+        align-items: stretch;
+    }
+
+        /* Kartların yeni görünümü */
+        .meal-list .card {
+            border-radius: 18px;
+            border: 1px solid #e1efe6;
+            box-shadow: 0 8px 22px rgba(0, 0, 0, 0.04);
+            height: 100%;
+            transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+        }
+
+            .meal-list .card:hover {
+                transform: translateY(-2px);
+                border-color: #c8e8d5;
+                box-shadow: 0 14px 28px rgba(0, 0, 0, 0.06);
+            }
+
+        /* Kart içindeki kcal badge'lerini yeşil yap (varsa) */
+        .meal-list .badge-primary {
+            background-color: #27ae60;
+            border-radius: 999px;
+            padding-inline: 12px;
+        }
+
+    @@media (max-width: 576px) {
+        .meal-header {
+            align-items: flex-start !important;
+        }
+
+        .meal-header-actions {
+            width: 100%;
+            justify-content: flex-start;
+            margin-top: 8px;
+        }
+
+        .meal-primary-btn,
+        .meal-secondary-btn {
+            width: 100%;
+            text-align: center;
+        }
+    }
+</style>

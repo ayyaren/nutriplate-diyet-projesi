@@ -28,12 +28,18 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// -------------------------
+// HTTP request pipeline
+// -------------------------
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
+    // 500 gibi uygulama içi hatalar için özel error sayfasý
+    app.UseExceptionHandler("/Error/Error");
     app.UseHsts();
 }
+
+// 404 / 403 gibi status code hatalarý için
+app.UseStatusCodePagesWithReExecute("/Error/{0}");
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();

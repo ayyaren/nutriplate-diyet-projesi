@@ -20,3 +20,56 @@ html {
 body {
   margin-bottom: 60px;
 }
+/* Landing (giriþ) ekraný stilleri */
+
+.landing-wrapper {
+    min-height: calc(100vh - 56px); /* navbar yüksekliðini çýkar */
+    background-color: #19a44b; /* yeþil arka plan */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.landing-card {
+    max-width: 480px;
+    width: 100%;
+    padding: 3rem 2.5rem 3.5rem;
+}
+
+/* Logo kýsmý */
+.landing-logo {
+    width: 120px;
+    height: 120px;
+    border: 4px solid #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    position: relative;
+}
+
+.landing-logo-key {
+    width: 36px;
+    height: 36px;
+    background-color: #ffffff;
+    border-radius: 50% 50% 40% 40%;
+    position: relative;
+}
+
+    .landing-logo-key::after {
+        content: "";
+        position: absolute;
+        bottom: -18px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 16px;
+        height: 22px;
+        background-color: #ffffff;
+        border-radius: 0 0 12px 12px;
+    }
+/* Landing ekraný için yeþil arka plan */
+.landing-bg {
+    background-color: #19a44b !important;
+    min-height: 100vh;
+    padding-top: 80px; /* navbar alaný kadar boþluk */
+}
