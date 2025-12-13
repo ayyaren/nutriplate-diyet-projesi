@@ -1,16 +1,50 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Nutriplate.Web.Services; // IAuthService ve AuthService buradaysa
+using Nutriplate.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// -------------------------
+// SERVICES
+// -------------------------
+
+// MVC
 builder.Services.AddControllersWithViews();
 
-// Node.js Auth API'ye istek atmak için HttpClient
-builder.Services.AddHttpClient();
+//
+// Node.js backend (http://localhost:3000) ile konuþan ApiClient
+//
+builder.Services.AddHttpClient<ApiClient>();
 
-// AuthService'i DI container'a ekle
-builder.Services.AddScoped<IAuthService, AuthService>();
+//
+// AuthService (AccountController için IAuthService)
+//
+builder.Services.AddHttpClient<IAuthService, AuthService>();
+
+//
+// MealService (MealController için IMealService)
+//
+builder.Services.AddHttpClient<IMealService, MealService>();
+
+
+
+builder.Services.AddHttpClient<OpenFoodFactsService>();
+
+
+//
+// ProfileService (ProfileController için IProfileService)
+//
+builder.Services.AddHttpClient<IProfileService, ProfileService>(client =>
+{
+    client.BaseAddress = new Uri("http://localhost:3000");
+});
+
+//
+// WeatherService (WeatherController için IWeatherService) – SOAP
+// BaseAddress vermek þart deðil, servisin içinde tam URL ile çaðýracaðýz.
+//
+builder.Services.AddHttpClient<IWeatherService, WeatherSoapService>();
+
+//
 
 // Cookie tabanlý kimlik doðrulama ayarlarý
 builder.Services
@@ -29,16 +63,14 @@ builder.Services.AddAuthorization();
 var app = builder.Build();
 
 // -------------------------
-// HTTP request pipeline
+// HTTP REQUEST PIPELINE
 // -------------------------
 if (!app.Environment.IsDevelopment())
 {
-    // 500 gibi uygulama içi hatalar için özel error sayfasý
     app.UseExceptionHandler("/Error/Error");
     app.UseHsts();
 }
 
-// 404 / 403 gibi status code hatalarý için
 app.UseStatusCodePagesWithReExecute("/Error/{0}");
 
 app.UseHttpsRedirection();

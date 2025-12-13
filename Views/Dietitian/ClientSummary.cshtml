@@ -1,0 +1,53 @@
+﻿@model IEnumerable<Nutriplate.Web.ViewModels.ClientDailySummaryViewModel>
+
+@{
+    ViewData["Title"] = "Danışan Günlük Özeti";
+    var clientId = ViewBag.ClientId as int? ?? 0;
+}
+
+<div class="container mt-4">
+    <h2 class="mb-3">Danışan Günlük Özeti</h2>
+    <p class="text-muted">
+        Danışan ID: <strong>@clientId</strong> için günlere göre toplam kalori.
+    </p>
+
+    @if (ViewBag.Error != null)
+    {
+        <div class="alert alert-danger">
+            @ViewBag.Error
+        </div>
+    }
+
+    <table class="table table-striped align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>Tarih</th>
+                <th>Toplam Kalori</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                foreach (var row in Model)
+                {
+                    <tr>
+                        <td>@row.SummaryDate.ToString("dd.MM.yyyy")</td>
+                        <td>@row.TotalCalories kcal</td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="2" class="text-center text-muted">
+                        Bu danışan için henüz günlük özet bulunmuyor.
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <a asp-controller="Dietitian" asp-action="Index" class="btn btn-secondary">
+        ← Danışan listesine dön
+    </a>
+</div>

@@ -1,25 +1,22 @@
 ﻿using System;
-using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
 
 namespace Nutriplate.Web.ViewModels
 {
     public class MealCreateViewModel
     {
-        [Required(ErrorMessage = "Öğün türü zorunludur")]
-        [Display(Name = "Öğün Türü")]
-        public string MealType { get; set; } = "Kahvaltı"; // Varsayılan
+        public string MealType { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Tarih / saat zorunludur")]
-        [Display(Name = "Tarih / Saat")]
-        [DataType(DataType.DateTime)]
+        // Öğünün tarihi / saati
         public DateTime MealDateTime { get; set; } = DateTime.Now;
 
-        [Display(Name = "Toplam Kalori (kcal)")]
-        [Range(0, 10000, ErrorMessage = "Kalori 0 ile 10000 arasında olmalıdır")]
-        public int? TotalKcal { get; set; }  // Zorunlu değil → Fotoğraf analizinden veya manuel eklemeden gelecek.
+        // Toplam kalori (kullanıcı elle girebilir, opsiyonel)
+        public int? TotalKcal { get; set; }
 
-        [Display(Name = "Notlar / Açıklama")]
-        [StringLength(500)]
+        // Not (opsiyonel)
         public string? Notes { get; set; }
+
+        // Dinamik eklediğimiz besin satırları
+        public List<MealFoodItemViewModel> Items { get; set; } = new();
     }
 }

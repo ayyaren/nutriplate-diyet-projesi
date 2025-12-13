@@ -1,0 +1,20 @@
+﻿@{
+    ViewData["Title"] = "gRPC Demo";
+    var celsius = (double)ViewBag.Celsius;
+    var fahrenheit = (double)ViewBag.Fahrenheit;
+}
+
+<h2>gRPC Sıcaklık Dönüşümü</h2>
+
+<p>
+    gRPC servisine <strong>@celsius °C</strong> gönderdik,
+    servis bize <strong>@fahrenheit °F</strong> sonucu döndürdü.
+</p>
+
+<form method="get">
+    <div class="mb-3">
+        <label class="form-label">Celsius değeri gir:</label>
+        <input type="number" step="0.1" name="celsius" class="form-control" value="@celsius" />
+    </div>
+    <button type="submit" class="btn btn-primary">gRPC ile Hesapla</button>
+</form>

@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Nutriplate.Web.Services;
 using Nutriplate.Web.ViewModels;
 
 namespace Nutriplate.Web.Controllers
@@ -9,57 +12,63 @@ namespace Nutriplate.Web.Controllers
     [Authorize]
     public class DashboardController : Controller
     {
-        [HttpGet]
-        public IActionResult Index(DateTime? date)
+        private readonly IMealService _mealService;
+
+        public DashboardController(IMealService mealService)
         {
+            _mealService = mealService;
+        }
+
+        // Claim'lerden token'ı çekmek için helper (MealController ile aynı mantık)
+        private bool TryGetAuthInfo(out int userId, out string token)
+        {
+            userId = 0;
+            token = string.Empty;
+
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var jwt = User.FindFirst("JwtToken")?.Value;
+
+            if (string.IsNullOrEmpty(userIdStr) || string.IsNullOrEmpty(jwt))
+                return false;
+
+            if (!int.TryParse(userIdStr, out userId))
+                return false;
+
+            token = jwt;
+            return true;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Index(DateTime? date)
+        {
+            if (!TryGetAuthInfo(out var userId, out var token))
+                return RedirectToAction("Login", "Account");
+
             // Tarih seçilmemişse bugünü kullan
             var targetDate = date ?? DateTime.Today;
 
-            // Şimdilik DUMMY (örnek) veri; ileride Ceren'in /api/dashboard/daily endpoint'inden gelecek.
+            // ✅ Backend'den, sadece o güne ait öğünleri çek
+            var mealsForDay = await _mealService.GetMealsForDayAsync(targetDate, token);
+
+            // Toplam kaloriyi öğünlerden hesapla
+            var totalKcal = mealsForDay.Sum(m => m.TotalKcal);
+
+
+            // İleride Profile'dan dailyCalorieTarget çekebilirsin, şimdilik sabit/dummy
             var model = new DailySummaryViewModel
             {
                 Date = targetDate,
+                TotalKcal = totalKcal,
 
-                // Kahvaltı (450) + Öğle (650) + Akşam (700) + Atıştırmalık (200) = 2000
-                TotalKcal = 2000,
+                // TODO: Profile'dan günlük hedef alabilirsin
                 TargetKcal = 2000,
 
-                ProteinGr = 90,
-                CarbGr = 200,
-                FatGr = 60,
+                // Şimdilik makroları hesaplamıyoruz, ileride eklersin
+                ProteinGr = 0,
+                CarbGr = 0,
+                FatGr = 0,
 
-                Meals = new List<MealListItemViewModel>
-                {
-                    new MealListItemViewModel
-                    {
-                        Id = 1,
-                        MealType = "Kahvaltı",
-                        MealDateTime = targetDate.AddHours(8),
-                        TotalKcal = 450
-                    },
-                    new MealListItemViewModel
-                    {
-                        Id = 2,
-                        MealType = "Öğle",
-                        MealDateTime = targetDate.AddHours(13),
-                        TotalKcal = 650
-                    },
-                    new MealListItemViewModel
-                    {
-                        Id = 3,
-                        MealType = "Akşam",
-                        MealDateTime = targetDate.AddHours(19),
-                        TotalKcal = 700
-                    },
-                    // ✅ YENİ: Atıştırmalık
-                    new MealListItemViewModel
-                    {
-                        Id = 4,
-                        MealType = "Atıştırmalık",
-                        MealDateTime = targetDate.AddHours(16), // örnek saat
-                        TotalKcal = 200
-                    }
-                }
+                Meals = mealsForDay.ToList()
             };
 
             return View(model);

@@ -6,4 +6,27 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="Dump20251130.sql" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Google.Protobuf" Version="3.33.2" />
+    <PackageReference Include="Grpc.Core.Api" Version="2.71.0" />
+    <PackageReference Include="Grpc.Net.Client" Version="2.71.0" />
+    <PackageReference Include="Grpc.Net.ClientFactory" Version="2.71.0" />
+    <PackageReference Include="Grpc.Tools" Version="2.76.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Views\NewFolder\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Nutriplate.GrpcService\Nutriplate.GrpcService.csproj" />
+  </ItemGroup>
+
 </Project>

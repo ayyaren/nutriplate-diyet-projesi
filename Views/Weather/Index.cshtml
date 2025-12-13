@@ -1,0 +1,111 @@
+﻿@model string
+
+@{
+    ViewData["Title"] = "Hava Durumu (SOAP)";
+
+    // Model dış servisten gelen Fahrenheit değerini temsil ediyor (ör: "68")
+    int tempF = 0;
+    int.TryParse(Model ?? "0", out tempF);
+
+    // °C'ye çevir
+    var tempC = (int)Math.Round((tempF - 32) * 5.0 / 9.0);
+
+    string activityMessage;
+
+    if (Model == null || tempF == 0)
+    {
+        activityMessage = "Şu anda dış servisten geçerli bir sıcaklık bilgisi alınamadı. Kapalı alanda hafif egzersiz iyi bir seçenek olabilir.";
+    }
+    else if (tempC < 5)
+    {
+        activityMessage = "Hava oldukça soğuk. Kısa yürüyüşler veya evde ısınma egzersizleri daha uygun.";
+    }
+    else if (tempC < 20)
+    {
+        activityMessage = "Serin ve ferah bir hava var. Tempolu yürüyüş veya hafif koşu için ideal.";
+    }
+    else if (tempC < 30)
+    {
+        activityMessage = "Ilık bir hava. Dışarıda koşu, bisiklet ya da açık hava egzersizleri için güzel bir zaman.";
+    }
+    else
+    {
+        activityMessage = "Hava sıcak. Hafif egzersizler yap, mümkünse gölgede kal ve bol su iç.";
+    }
+}
+
+<div class="row justify-content-center mt-4">
+    <div class="col-lg-8">
+
+        <!-- Başlık -->
+        <div class="mb-4 text-center">
+            <h1 class="fw-bold mb-1">Hava Durumu </h1>
+            <p class="text-muted mb-0">
+                W3Schools TempConvert SOAP servisine yapılan çağrının sonucu
+            </p>
+        </div>
+
+        <!-- Hava kartı -->
+        <div class="card shadow-sm border-0 rounded-4 mb-4">
+            <div class="card-body p-4 p-md-5 d-flex flex-column flex-md-row align-items-center">
+
+                <!-- Sol: İkon + sıcaklık -->
+                <div class="me-md-4 mb-4 mb-md-0 text-center">
+                    <div class="display-3 mb-2">
+                        🌤
+                    </div>
+
+                    @if (Model != null && tempF != 0)
+                    {
+                        <div class="display-5 fw-bold">
+                            @tempC° C
+                        </div>
+                        <div class="text-muted">
+                            (@tempF° F)
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="h4 fw-bold text-danger">
+                            Veri alınamadı
+                        </div>
+                    }
+                </div>
+
+                <!-- Sağ: açıklama + spor -->
+                <div class="flex-grow-1">
+                    @if (Model != null && tempF != 0)
+                    {
+                        <p class="mb-2">
+                            Dış servisten gelen sıcaklık bilgisi yanda °C ve °F olarak gösterilmektedir.
+                        </p>
+
+                        <div class="alert alert-success mb-3">
+                            <strong>Spor Önerisi:</strong> @activityMessage
+                        </div>
+
+                        <ul class="small text-muted mb-0">
+                            <li>Veri, <strong>SOAP</strong> protokolü kullanılarak dış bir web servisinden alınmaktadır.</li>
+                            <li>Bu ekran, projenin SOA / SOAP isterini karşıladığını görsel olarak da kanıtlar.</li>
+                        </ul>
+                    }
+                    else
+                    {
+                        <div class="alert alert-warning mb-0">
+                            Şu anda sıcaklık değeri alınamadı. Daha sonra yeniden deneyebilir veya internet bağlantınızı
+                            kontrol edebilirsiniz.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Küçük not / demo bilgisi -->
+        <div class="text-muted small text-center">
+            <span class="badge bg-light text-dark border">
+                SOAP Endpoint: W3Schools <code>TempConvert.asmx</code> servisi
+            </span>
+        </div>
+
+    </div>
+</div>

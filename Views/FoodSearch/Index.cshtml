@@ -1,0 +1,49 @@
+﻿@{
+    ViewData["Title"] = "Ürün & Kalori Arama (Hazır API)";
+    var product = ViewBag.Product as Nutriplate.Web.Services.FoodProduct;
+}
+
+<div class="container py-5">
+    <h3 class="mb-4">🍎 Ürün & Kalori Arama</h3>
+
+    <form method="post" class="row g-3 mb-4">
+        <div class="col-md-8">
+            <input type="text"
+                   name="barcode"
+                   class="form-control form-control-lg"
+                   placeholder="Ürün barkodu girin (örn: 737628064502)" />
+        </div>
+        <div class="col-md-4">
+            <button class="btn btn-success btn-lg w-100">
+                Ara (OpenFoodFacts)
+            </button>
+        </div>
+    </form>
+
+    @if (product != null)
+    {
+        <div class="card shadow-sm border-0 rounded-4">
+            <div class="card-body">
+                <h5 class="card-title">@product.Name</h5>
+
+                @if (!string.IsNullOrEmpty(product.ImageUrl))
+                {
+                    <img src="@product.ImageUrl"
+                         class="img-fluid rounded mb-3"
+                         style="max-height:250px;" />
+                }
+
+                <p class="mb-1">
+                    <strong>Kalori (100g):</strong>
+                    @(product.Nutriments?.Calories ?? 0) kcal
+                </p>
+            </div>
+        </div>
+    }
+    else if (ViewBag.Barcode != null)
+    {
+        <div class="alert alert-warning">
+            Ürün bulunamadı.
+        </div>
+    }
+</div>

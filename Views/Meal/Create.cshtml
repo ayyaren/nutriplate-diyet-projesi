@@ -1,65 +1,241 @@
 ﻿@model Nutriplate.Web.ViewModels.MealCreateViewModel
 
 @{
-    ViewData["Title"] = "Yeni Öğün Oluştur";
+    ViewData["Title"] = "Yeni Öğün";
 }
 
-<h2>Yeni Öğün Oluştur</h2>
+<!-- Geri dön butonu -->
+<a asp-action="Index" class="btn btn-outline-secondary mb-3">
+    ← Öğün Listesine Dön
+</a>
 
-@if (TempData["Success"] != null)
-{
-    <div class="alert alert-success">@TempData["Success"]</div>
-}
+<div class="meal-create-page">
+    <div class="card meal-create-card shadow-sm">
+        <div class="card-body">
+            <h2 class="create-title mb-1">Yeni Öğün</h2>
+            <p class="text-muted mb-4">
+                Öğün türünü, tarih/saatini, yediğin besinleri ve istersen öğün fotoğrafını buradan ekleyebilirsin.
+            </p>
 
-@if (TempData["Error"] != null)
-{
-    <div class="alert alert-danger">@TempData["Error"]</div>
-}
+            <form asp-action="Create"
+                  method="post"
+                  enctype="multipart/form-data"
+                  class="row g-3">
+                @Html.AntiForgeryToken()
 
-<form asp-action="Create" method="post" class="mt-3">
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <!-- Öğün türü / Tarih / Toplam kalori -->
+                <div class="col-md-4">
+                    <label asp-for="MealType" class="form-label fw-semibold">Öğün Türü</label>
+                    <select asp-for="MealType" class="form-select">
+                        <option value="">Seç...</option>
+                        <option value="Kahvaltı">Kahvaltı</option>
+                        <option value="Öğle">Öğle</option>
+                        <option value="Akşam">Akşam</option>
+                        <option value="Atıştırmalık">Atıştırmalık</option>
+                    </select>
+                    <span asp-validation-for="MealType" class="text-danger"></span>
+                </div>
 
-    <!-- ÖĞÜN TÜRÜ -->
-    <div class="mb-3">
-        <label asp-for="MealType" class="form-label"></label>
-        <select asp-for="MealType" class="form-select">
-            <option value="">Öğün Seçiniz</option>
-            <option value="Kahvaltı">Kahvaltı</option>
-            <option value="Öğle">Öğle</option>
-            <option value="Akşam">Akşam</option>
-            <option value="Ara Öğün">Ara Öğün</option>
-        </select>
-        <span asp-validation-for="MealType" class="text-danger"></span>
+                <div class="col-md-4">
+                    <label asp-for="MealDateTime" class="form-label fw-semibold">Tarih / Saat</label>
+                    <input asp-for="MealDateTime"
+                           class="form-control"
+                           type="datetime-local" />
+                    <span asp-validation-for="MealDateTime" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-4">
+                    <label asp-for="TotalKcal" class="form-label fw-semibold">Toplam Kalori (opsiyonel)</label>
+                    <input asp-for="TotalKcal"
+                           class="form-control"
+                           placeholder="Örn: 650" />
+                    <span asp-validation-for="TotalKcal" class="text-danger"></span>
+                </div>
+
+                <!-- FOTOĞRAF (Yeni eklediğimiz kısım) -->
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Öğün Fotoğrafı (opsiyonel)</label>
+                    <input type="file"
+                           name="MealPhoto"
+                           class="form-control"
+                           accept="image/*" />
+                    <div class="form-text">
+                        Şimdilik sadece kayda ekleniyor. Bersu’nun ML modeli eklendiğinde
+                        bu fotoğraftan kalori ve makro analizi yapılacak.
+                    </div>
+                </div>
+
+                <!-- Not -->
+                <div class="col-12">
+                    <label asp-for="Notes" class="form-label fw-semibold">Not (opsiyonel)</label>
+                    <textarea asp-for="Notes"
+                              class="form-control"
+                              rows="3"
+                              placeholder="Bu öğünle ilgili not eklemek istersen buraya yazabilirsin."></textarea>
+                    <span asp-validation-for="Notes" class="text-danger"></span>
+                </div>
+
+                <!-- Yedikleri tablo -->
+                <div class="col-12 mt-3">
+                    <h4 class="mb-2">Yediklerin</h4>
+
+                    <div class="table-responsive">
+                        <table class="table align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width:40px;">#</th>
+                                    <th>Besin</th>
+                                    <th style="width:140px;">Gram</th>
+                                    <th style="width:160px;">Kalori (kcal)</th>
+                                    <th style="width:60px;"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="foodRows">
+                                @for (int i = 0; i < Model.Items.Count; i++)
+                                {
+                                    <tr>
+                                        <td>@(i + 1)</td>
+                                        <td>
+                                            <input asp-for="Items[@i].FoodName"
+                                                   class="form-control"
+                                                   placeholder="Besin adı" />
+                                            <span asp-validation-for="Items[@i].FoodName" class="text-danger"></span>
+                                        </td>
+                                        <td>
+                                            <div class="input-group">
+                                                <input asp-for="Items[@i].Gram"
+                                                       class="form-control"
+                                                       placeholder="0" />
+                                                <span class="input-group-text">g</span>
+                                            </div>
+                                            <span asp-validation-for="Items[@i].Gram" class="text-danger"></span>
+                                        </td>
+                                        <td>
+                                            <div class="input-group">
+                                                <input asp-for="Items[@i].Kcal"
+                                                       class="form-control"
+                                                       placeholder="0" />
+                                                <span class="input-group-text">kcal</span>
+                                            </div>
+                                            <span asp-validation-for="Items[@i].Kcal" class="text-danger"></span>
+                                        </td>
+                                        <td class="text-end">
+                                            <button type="button"
+                                                    class="btn btn-outline-danger btn-sm"
+                                                    onclick="removeRow(this)">
+                                                Sil
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <button type="button"
+                            class="btn btn-outline-success btn-sm mt-1"
+                            onclick="addFoodRow()">
+                        + Besin Satırı Ekle
+                    </button>
+
+                    <p class="text-muted small mt-2">
+                        Besin adını yazarken aşağı açılan listeden seçim yapabilirsiniz (ileride).
+                        Gram ve kalori alanlarını elle girebilir veya daha sonra diyetisyen panelinden güncelleyebilirsiniz.
+                    </p>
+                </div>
+
+                <!-- Alt butonlar -->
+                <div class="col-12 d-flex justify-content-end gap-2 mt-3">
+                    <a asp-action="Index" class="btn btn-outline-secondary">İptal</a>
+                    <button type="submit" class="btn btn-success">Öğünü Kaydet</button>
+                </div>
+            </form>
+        </div>
     </div>
-
-    <!-- TARİH / SAAT -->
-    <div class="mb-3">
-        <label asp-for="MealDateTime" class="form-label"></label>
-        <input asp-for="MealDateTime"
-               class="form-control"
-               type="datetime-local"
-               value="@Model.MealDateTime.ToString("yyyy-MM-ddTHH:mm")" />
-        <span asp-validation-for="MealDateTime" class="text-danger"></span>
-    </div>
-
-    <!-- TOPLAM KALORİ (Opsiyonel) -->
-    <div class="mb-3">
-        <label asp-for="TotalKcal" class="form-label"></label>
-        <input asp-for="TotalKcal" class="form-control" />
-        <span asp-validation-for="TotalKcal" class="text-danger"></span>
-    </div>
-
-    <!-- NOTLAR -->
-    <div class="mb-3">
-        <label asp-for="Notes" class="form-label"></label>
-        <textarea asp-for="Notes" class="form-control" rows="3"></textarea>
-        <span asp-validation-for="Notes" class="text-danger"></span>
-    </div>
-
-    <button type="submit" class="btn btn-primary">Kaydet</button>
-    <a asp-action="Index" class="btn btn-secondary ms-2">İptal</a>
-</form>
+</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        // Yeni besin satırı ekleme
+        function addFoodRow() {
+            const tableBody = document.getElementById('foodRows');
+            const index = tableBody.children.length;
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${index + 1}</td>
+                <td>
+                    <input name="Items[${index}].FoodName"
+                           class="form-control"
+                           placeholder="Besin adı" />
+                </td>
+                <td>
+                    <div class="input-group">
+                        <input name="Items[${index}].Gram"
+                               class="form-control"
+                               placeholder="0" />
+                        <span class="input-group-text">g</span>
+                    </div>
+                </td>
+                <td>
+                    <div class="input-group">
+                        <input name="Items[${index}].Kcal"
+                               class="form-control"
+                               placeholder="0" />
+                        <span class="input-group-text">kcal</span>
+                    </div>
+                </td>
+                <td class="text-end">
+                    <button type="button"
+                            class="btn btn-outline-danger btn-sm"
+                            onclick="removeRow(this)">
+                        Sil
+                    </button>
+                </td>
+            `;
+            tableBody.appendChild(row);
+        }
+
+        // Satır silme
+        function removeRow(button) {
+            const row = button.closest('tr');
+            const tbody = row.parentElement;
+            tbody.removeChild(row);
+
+            // indexleri güncelle
+            Array.from(tbody.children).forEach((tr, i) => {
+                tr.children[0].innerText = i + 1;
+                tr.querySelectorAll('input[name^="Items["]').forEach(input => {
+                    const oldName = input.getAttribute('name');
+                    const prop = oldName.substring(oldName.indexOf('].') + 2);
+                    input.setAttribute('name', `Items[${i}].${prop}`);
+                });
+            });
+        }
+    </script>
 }
+
+<style>
+    body {
+        background: radial-gradient(circle at top, #e9f9ef 0, #f6fff9 40%, #ffffff 100%);
+    }
+
+    .meal-create-page {
+        padding-top: 16px;
+        padding-bottom: 32px;
+    }
+
+    .meal-create-card {
+        max-width: 1100px;
+        margin: 0 auto;
+        border-radius: 18px;
+        border: 1px solid #e1efe6;
+    }
+
+    .create-title {
+        font-weight: 700;
+        color: #1b2833;
+    }
+</style>

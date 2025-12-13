@@ -1,66 +1,210 @@
 ﻿@model Nutriplate.Web.ViewModels.MealPhotoUploadViewModel
+@using System.Linq
 
 @{
     ViewData["Title"] = "Fotoğraftan Öğün Analizi";
 }
 
-<h2>Fotoğraftan Öğün Analizi</h2>
+<div class="upload-page">
+    <div class="card upload-card shadow-sm">
+        <div class="card-body">
+            <h2 class="upload-title mb-1">Fotoğraftan Öğün Analizi</h2>
+            <p class="text-muted mb-4">
+                Yediğin öğünün fotoğrafını yükle, öğün türünü ve zamanı seç.
+                ML entegrasyonu hazır olduğunda kalori ve makro analizi burada görünecek.
+            </p>
 
-@if (TempData["Success"] != null)
-{
-    <div class="alert alert-success">@TempData["Success"]</div>
-}
+            <form asp-action="UploadPhoto"
+                  method="post"
+                  enctype="multipart/form-data"
+                  class="row g-3">
 
-<form asp-action="UploadPhoto" method="post" enctype="multipart/form-data">
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                @Html.AntiForgeryToken()
 
-    <div class="mb-3">
-        <label asp-for="Photo" class="form-label"></label>
-        <input asp-for="Photo" class="form-control" type="file" accept="image/*" />
-        <span asp-validation-for="Photo" class="text-danger"></span>
+                <!-- Fotoğraf -->
+                <div class="col-12">
+                    <label asp-for="Photo" class="form-label fw-semibold">Fotoğraf</label>
+                    <input asp-for="Photo"
+                           class="form-control"
+                           type="file"
+                           accept="image/*" />
+                    <span asp-validation-for="Photo" class="text-danger"></span>
+                </div>
+
+                <!-- Öğün tipi + tarih/saat aynı satırda -->
+                <div class="col-md-4">
+                    <label asp-for="MealType" class="form-label fw-semibold">Öğün</label>
+                    <select asp-for="MealType" class="form-select">
+                        <option value="">Seçiniz...</option>
+                        <option value="Kahvaltı">Kahvaltı</option>
+                        <option value="Öğle">Öğle</option>
+                        <option value="Akşam">Akşam</option>
+                        <option value="Atıştırmalık">Atıştırmalık</option>
+                    </select>
+                    <span asp-validation-for="MealType" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Tarih</label>
+                    <input type="date"
+                           name="MealDate"
+                           class="form-control"
+                           value="@Model.MealDateTime.ToString("yyyy-MM-dd")" />
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Saat</label>
+                    <input type="time"
+                           name="MealTime"
+                           class="form-control"
+                           value="@Model.MealDateTime.ToString("HH\\:mm")" />
+                </div>
+
+                <!-- Not -->
+                <div class="col-12">
+                    <label asp-for="Notes" class="form-label fw-semibold">Not (opsiyonel)</label>
+                    <textarea asp-for="Notes"
+                              class="form-control"
+                              rows="3"
+                              placeholder="Örneğin: Dışarıda yedim, sosu boldu, yanında içecek vardı..."></textarea>
+                    <span asp-validation-for="Notes" class="text-danger"></span>
+                </div>
+
+                <!-- Butonlar -->
+                <div class="col-12 d-flex flex-wrap gap-2 mt-2">
+                    <button type="submit" class="btn btn-success">
+                        Analiz Et
+                    </button>
+
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        Öğünlerime Dön
+                    </a>
+                </div>
+            </form>
+        </div>
     </div>
 
-    <div class="mb-3">
-        <label asp-for="Notes" class="form-label"></label>
-        <textarea asp-for="Notes" class="form-control" rows="3"></textarea>
-        <span asp-validation-for="
-Notes" class="text-danger"></span>
-    </div>
+    <!-- ====================== -->
+    <!-- ANALİZ SONUCU BLOĞU    -->
+    <!-- ====================== -->
+    @if (Model != null && Model.AnalysisResults != null && Model.AnalysisResults.Any())
+    {
+        <div class="card mt-4 shadow-sm">
+            <div class="card-body">
+                <h4 class="mb-3">Analiz Sonucu (Örnek)</h4>
 
-    <button type="submit" class="btn btn-primary">Analiz Et</button>
-    <a asp-action="Index" class="btn btn-secondary ms-2">Öğünlerime Dön</a>
-</form>
+                @{
+                    var totalKcal = Model.AnalysisResults.Sum(i => i.Kcal);
+                }
 
-@if (Model.AnalysisResults != null && Model.AnalysisResults.Any())
-{
-    <hr />
-    <h3>Analiz Sonucu (Örnek)</h3>
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Besin</th>
-                <th>Gram</th>
-                <th>Kalori</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model.AnalysisResults)
-            {
-                <tr>
-                    <td>@item.FoodName</td>
-                    <td>@item.Gram gr</td>
-                    <td>@item.Kcal kcal</td>
-                </tr>
-            }
-        </tbody>
-        <tfoot>
-            <tr>
-                <th colspan="2">Toplam</th>
-                <th>@Model.TotalKcal kcal</th>
-            </tr>
-        </tfoot>
-    </table>
-}
+                <div class="row mb-3 g-3">
+                    <div class="col-md-4">
+                        <div class="result-pill">
+                            <div class="result-label">Tahmini Toplam Kalori</div>
+                            <div class="result-value">@totalKcal kcal</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="result-pill">
+                            <div class="result-label">Öğün</div>
+                            <div class="result-value">@Model.MealType</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="result-pill">
+                            <div class="result-label">Tarih / Saat</div>
+                            <div class="result-value">
+                                @Model.MealDateTime.ToString("dd.MM.yyyy HH:mm")
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <h5 class="mt-3 mb-2">Tespit Edilen Yiyecekler</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>Besin</th>
+                                <th>Gram</th>
+                                <th>Kalori (kcal)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (int i = 0; i < Model.AnalysisResults.Count; i++)
+                            {
+                                var item = Model.AnalysisResults[i];
+                                <tr>
+                                    <td>@(i + 1)</td>
+                                    <td>@item.FoodName</td>
+                                    <td>@item.Gram gr</td>
+                                    <td>@item.Kcal</td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th colspan="3">Toplam</th>
+                                <th>@totalKcal kcal</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <div class="alert alert-info mt-3 mb-0">
+                    <strong>Not:</strong> Şu an burada örnek analiz gösteriliyor.
+                    Bersû’nun ML modeli eklendiğinde, bu bölüm gerçek kalori, makro değerleri ve
+                    <em>“bunun yerine şunu tüketebilirsin”</em> tarzı önerileri gösterecek.
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }
+
+<style>
+    body {
+        background: radial-gradient(circle at top, #e9f9ef 0, #f6fff9 40%, #ffffff 100%);
+    }
+
+    .upload-page {
+        padding-top: 16px;
+        padding-bottom: 32px;
+    }
+
+    .upload-card {
+        max-width: 900px;
+        margin: 0 auto;
+        border-radius: 18px;
+        border: 1px solid #e1efe6;
+    }
+
+    .upload-title {
+        font-weight: 700;
+        color: #1b2833;
+    }
+
+    .result-pill {
+        border-radius: 14px;
+        border: 1px solid #e1efe6;
+        background: #f4f9f7;
+        padding: 10px 16px;
+    }
+
+    .result-label {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: #7b8a93;
+        margin-bottom: 2px;
+    }
+
+    .result-value {
+        font-weight: 700;
+        color: #1b2833;
+    }
+</style>

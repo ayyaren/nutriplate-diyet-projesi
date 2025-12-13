@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Nutriplate.Web.Services;
 using Nutriplate.Web.ViewModels;
@@ -16,7 +17,10 @@ namespace Nutriplate.Web.Controllers
             _authService = authService;
         }
 
+        // ----------------- LOGIN -----------------
+
         [HttpGet]
+        [AllowAnonymous]
         public IActionResult Login(string? returnUrl = null)
         {
             var model = new LoginViewModel
@@ -27,6 +31,8 @@ namespace Nutriplate.Web.Controllers
         }
 
         [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
             if (!ModelState.IsValid)
@@ -47,8 +53,8 @@ namespace Nutriplate.Web.Controllers
                 {
                     new Claim(ClaimTypes.NameIdentifier, authResult.UserId),
                     new Claim(ClaimTypes.Name, authResult.Name),
-                    new Claim(ClaimTypes.Email, model.Email),
-                    new Claim(ClaimTypes.Role, authResult.Role),
+                    new Claim(ClaimTypes.Email, authResult.Email),
+                    new Claim(ClaimTypes.Role, authResult.Role), // "Admin" / "Dietitian" / "User"
                     new Claim("JwtToken", authResult.Token)
                 };
 
@@ -59,29 +65,39 @@ namespace Nutriplate.Web.Controllers
                     CookieAuthenticationDefaults.AuthenticationScheme,
                     principal);
 
-                // Eğer geçerli bir ReturnUrl varsa önce oraya git
+                // 1) Geçerli bir ReturnUrl varsa oraya git
                 if (!string.IsNullOrEmpty(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
                 {
                     return Redirect(model.ReturnUrl);
                 }
 
-                // Aksi halde doğrudan ÖĞÜNLERİM sayfasına yönlendir
-                return RedirectToAction("Index", "Meal");
+                // 2) Rol'e göre yönlendirme
+                return authResult.Role switch
+                {
+                    "Dietitian" => RedirectToAction("Index", "Dietitian"),
+                    "Admin" => RedirectToAction("Index", "Dashboard"),
+                    _ => RedirectToAction("Index", "Dashboard")
+                };
             }
-            catch (Exception)
+            catch
             {
                 TempData["Error"] = "Giriş sırasında bir hata oluştu. Daha sonra tekrar deneyin.";
                 return View(model);
             }
         }
 
+        // ----------------- USER REGISTER -----------------
+
         [HttpGet]
+        [AllowAnonymous]
         public IActionResult Register()
         {
             return View(new RegisterViewModel());
         }
 
         [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
             if (!ModelState.IsValid)
@@ -93,21 +109,62 @@ namespace Nutriplate.Web.Controllers
 
                 if (!success)
                 {
-                    TempData["Error"] = "Kayıt sırasında bir hata oluştu.";
+                    TempData["Error"] = "Kayıt sırasında bir hata oluştu (e-posta zaten kayıtlı olabilir).";
                     return View(model);
                 }
 
                 TempData["Success"] = "Kayıt başarılı. Şimdi giriş yapabilirsiniz.";
                 return RedirectToAction("Login");
             }
-            catch (Exception)
+            catch
             {
                 TempData["Error"] = "Sunucuya erişilemiyor. Biraz sonra tekrar deneyin.";
                 return View(model);
             }
         }
 
+        // ----------------- DİYETİSYEN REGISTER -----------------
+
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult DietitianRegister()
+        {
+            return View(new RegisterViewModel());
+        }
+
         [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DietitianRegister(RegisterViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            try
+            {
+                var success = await _authService.DietitianRegisterAsync(model.Email, model.Password, model.Name);
+
+                if (!success)
+                {
+                    TempData["Error"] = "Diyetisyen kaydı sırasında bir hata oluştu.";
+                    return View(model);
+                }
+
+                TempData["Success"] = "Diyetisyen kaydı başarılı. Şimdi giriş yapabilirsiniz.";
+                return RedirectToAction("Login");
+            }
+            catch
+            {
+                TempData["Error"] = "Sunucuya erişilemiyor. Biraz sonra tekrar deneyin.";
+                return View(model);
+            }
+        }
+
+        // ----------------- LOGOUT -----------------
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
@@ -115,6 +172,7 @@ namespace Nutriplate.Web.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public IActionResult AccessDenied()
         {
             return View();

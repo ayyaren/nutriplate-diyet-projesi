@@ -1,0 +1,90 @@
+﻿@{
+    ViewData["Title"] = "BMI Hesaplama";
+}
+
+<style>
+    .bmi-container {
+        max-width: 750px;
+        margin: auto;
+        background: #ffffff;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        margin-top: 40px;
+    }
+
+    .bmi-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: #2ecc71;
+        margin-bottom: 10px;
+        text-align: center;
+    }
+
+    .bmi-subtext {
+        text-align: center;
+        color: #6c757d;
+        margin-bottom: 25px;
+    }
+
+    .result-box {
+        background: #e8f9f0;
+        border-left: 6px solid #2ecc71;
+        padding: 20px;
+        border-radius: 8px;
+        margin-top: 20px;
+    }
+
+    .advice-box {
+        background: #fdf6e3;
+        padding: 20px;
+        border-left: 6px solid #f1c40f;
+        border-radius: 8px;
+        margin-top: 15px;
+    }
+
+    .advice-title {
+        font-weight: 600;
+        font-size: 18px;
+        color: #b37b00;
+    }
+</style>
+
+<div class="bmi-container">
+
+    <div class="bmi-title">Vücut Kitle İndeksi</div>
+    <div class="bmi-subtext">Boy ve kilo bilgilerinize göre vücut kitle indeksinizi hesaplayın.</div>
+
+    <form method="get" asp-action="Index" class="row g-3">
+        <div class="col-md-6">
+            <label class="form-label">Boy (metre)</label>
+            <input type="number" step="0.01" min="0" name="height" class="form-control"
+                   placeholder="Örn: 1.68" required value="@(ViewBag.Height ?? "")" />
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label">Kilo (kg)</label>
+            <input type="number" step="0.1" min="0" name="weight" class="form-control"
+                   placeholder="Örn: 55" required value="@(ViewBag.Weight ?? "")" />
+        </div>
+
+        <div class="col-md-12 d-flex justify-content-center mt-2">
+            <button type="submit" class="btn btn-success px-5 py-2">
+                Hesapla
+            </button>
+        </div>
+    </form>
+
+    @if (ViewBag.Bmi != null)
+    {
+        <div class="result-box mt-4">
+            <h5><strong>BMI:</strong> @(((double)ViewBag.Bmi).ToString("0.0"))</h5>
+            <h6><strong>Kategori:</strong> @ViewBag.Category</h6>
+        </div>
+
+        <div class="advice-box">
+            <div class="advice-title">Beslenme Önerisi</div>
+            <p>@ViewBag.Advice</p>
+        </div>
+    }
+</div>

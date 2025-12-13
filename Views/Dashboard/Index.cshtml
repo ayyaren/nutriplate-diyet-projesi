@@ -4,313 +4,528 @@
     ViewData["Title"] = "Günlük Özet";
 }
 
-<div class="daily-page">
+<div class="dashboard-container">
 
-    @await Component.InvokeAsync("DailySummary")
-
-    <!-- Üst başlık + tarih filtresi -->
-    <div class="daily-header d-flex flex-wrap justify-content-between align-items-center mb-4">
-        <div class="mb-2 mb-md-0">
-            <h2 class="daily-title mb-1">Günlük Özet</h2>
-            <p class="daily-subtitle mb-0">
-                Seçtiğin tarihteki kalori ve makro dengesini buradan takip edebilirsin.
-            </p>
-        </div>
-
-        <form method="get" asp-action="Index" class="daily-date-form d-flex flex-wrap align-items-center gap-2">
-            <label class="col-form-label me-1">Tarih:</label>
-            <input type="date"
-                   name="date"
-                   value="@Model.Date.ToString("yyyy-MM-dd")"
-                   class="form-control form-control-sm daily-date-input" />
-            <button type="submit" class="btn btn-success daily-filter-btn">
-                Göster
+    <!-- ======================== -->
+    <!-- ÜST BUTON MENÜSÜ (TAB)  -->
+    <!-- ======================== -->
+    <div class="d-flex justify-content-start mb-3">
+        <div class="view-toggle-group btn-group" role="group">
+            <button type="button"
+                    class="btn btn-view-toggle active"
+                    data-target="summarySection">
+                Günlük Özet
             </button>
-        </form>
-    </div>
+            <button type="button"
+                    class="btn btn-view-toggle"
+                    data-target="mealSection">
+                Öğün Listesi
+            </button>
 
-    <!-- Özet kartları -->
-    <div class="row mb-4 g-3">
-        <div class="col-md-3">
-            <div class="card summary-card">
-                <div class="card-body">
-                    <div class="summary-label">Toplam Kalori</div>
-                    <h4 class="summary-value">@Model.TotalKcal kcal</h4>
-                    <p class="summary-subtext mb-0">Hedef: @Model.TargetKcal kcal</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card summary-card">
-                <div class="card-body">
-                    <div class="summary-label">Protein</div>
-                    <h4 class="summary-value">@Model.ProteinGr g</h4>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card summary-card">
-                <div class="card-body">
-                    <div class="summary-label">Karbonhidrat</div>
-                    <h4 class="summary-value">@Model.CarbGr g</h4>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card summary-card">
-                <div class="card-body">
-                    <div class="summary-label">Yağ</div>
-                    <h4 class="summary-value">@Model.FatGr g</h4>
-                </div>
-            </div>
+            <!-- YENİ: Öğünlerim sayfasına giden buton -->
+            <a asp-controller="Meal"
+               asp-action="Index"
+               class="btn btn-view-toggle">
+                Öğünlerim
+            </a>
         </div>
     </div>
 
-    <!-- Grafikler -->
-    <div class="row mb-4 g-3">
-        <div class="col-md-6">
-            <div class="card chart-card">
-                <div class="card-body">
-                    <h5 class="chart-title mb-3">Kalori Karşılaştırma</h5>
-                    <canvas id="kcalBarChart" height="140"></canvas>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="card chart-card">
-                <div class="card-body">
-                    <h5 class="chart-title mb-3">Makro Dağılımı</h5>
-                    <canvas id="macroPieChart" height="140"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- ============================== -->
+    <!-- 1) GÜNLÜK ÖZET (KART + GRAFİK) -->
+    <!-- ============================== -->
+    <div id="summarySection">
 
-    <!-- Öğün listesi -->
-    <div class="card meal-table-card">
-        <div class="card-body">
-            <h5 class="mb-3">Öğün Listesi</h5>
+        <!-- ÖZET PANEL -->
+        <div class="card summary-main-card mb-4">
+            <div class="card-body">
 
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th>#</th>
-                            <th>Öğün</th>
-                            <th>Saat</th>
-                            <th>Toplam Kalori</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var meal in Model.Meals)
-                        {
-                            <tr>
-                                <td>@meal.Id</td>
-                                <td>@meal.MealType</td>
-                                <td>@meal.MealDateTime.ToString("HH:mm")</td>
-                                <td>@meal.TotalKcal kcal</td>
-                            </tr>
+                <div class="d-flex flex-column flex-md-row justify-content-between">
+                    <!-- Sol taraf -->
+                    <div>
+                        <h3 class="summary-main-title mb-2">Günlük Özet</h3>
+                        <p class="summary-main-subtext mb-3">
+                            Seçtiğin tarihteki kalori ve makro değerlerini görüntüleyebilirsin.
+                        </p>
+                    </div>
+
+                    <!-- Tarih seçici -->
+                    <form method="get" asp-action="Index"
+                          class="d-flex flex-wrap align-items-center gap-2">
+                        <label class="col-form-label fw-semibold">Tarih:</label>
+
+                        <input type="date"
+                               name="date"
+                               value="@Model.Date.ToString("yyyy-MM-dd")"
+                               class="form-control form-control-sm date-input" />
+
+                        <button type="submit" class="btn btn-success summary-date-btn">
+                            Göster
+                        </button>
+                    </form>
+                </div>
+
+                <hr />
+
+                <!-- Kalori Bar -->
+                <div class="mb-3">
+                    <p class="fw-semibold mb-1">
+                        Toplam Alınan Kalori:
+                        <span class="text-primary">@Model.TotalKcal kcal</span>
+                    </p>
+
+                    <p class="mb-2">
+                        Hedef Kalori:
+                        <span class="fw-semibold">@Model.TargetKcal kcal</span>
+                    </p>
+
+                    <div class="progress" style="height: 16px;">
+                        @{
+                            var percent = Model.TargetKcal == 0
+                            ? 0
+                            : Math.Min(100, (int)((double)Model.TotalKcal / Model.TargetKcal * 100));
                         }
-                    </tbody>
-                </table>
+                        <div class="progress-bar bg-success" role="progressbar"
+                             style="width:@percent%">
+                            @percent%
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Makro minik özet -->
+                <div class="d-flex flex-wrap gap-4 mt-3">
+                    <div class="macro-pill">
+                        <span class="macro-label">Protein</span>
+                        <span class="macro-value">@Model.ProteinGr g</span>
+                    </div>
+
+                    <div class="macro-pill">
+                        <span class="macro-label">Karbonhidrat</span>
+                        <span class="macro-value">@Model.CarbGr g</span>
+                    </div>
+
+                    <div class="macro-pill">
+                        <span class="macro-label">Yağ</span>
+                        <span class="macro-value">@Model.FatGr g</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ÖZET KART GRUBU -->
+        <div class="row mb-4 g-3">
+            <div class="col-md-3">
+                <div class="card mini-summary-card">
+                    <div class="card-body">
+                        <div class="mini-label">Toplam Kalori</div>
+                        <h4 class="mini-value">@Model.TotalKcal kcal</h4>
+                        <p class="mini-sub">Hedef: @Model.TargetKcal kcal</p>
+                    </div>
+                </div>
             </div>
 
+            <div class="col-md-3">
+                <div class="card mini-summary-card">
+                    <div class="card-body">
+                        <div class="mini-label">Protein</div>
+                        <h4 class="mini-value">@Model.ProteinGr g</h4>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card mini-summary-card">
+                    <div class="card-body">
+                        <div class="mini-label">Karbonhidrat</div>
+                        <h4 class="mini-value">@Model.CarbGr g</h4>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card mini-summary-card">
+                    <div class="card-body">
+                        <div class="mini-label">Yağ</div>
+                        <h4 class="mini-value">@Model.FatGr g</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- GRAFİKLER -->
+        <div class="row mb-4 g-3">
+            <div class="col-md-6">
+                <div class="card chart-card">
+                    <div class="card-body">
+                        <h5 class="chart-title mb-3">Kalori Karşılaştırma</h5>
+
+                        <div class="chart-container chart-container-bar">
+                            <canvas id="kcalBarChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card chart-card">
+                    <div class="card-body">
+                        <h5 class="chart-title mb-3">Makro Dağılımı</h5>
+
+                        <div class="chart-container chart-container-pie">
+                            <canvas id="macroPieChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div> <!-- /summarySection -->
+    <!-- ========================== -->
+    <!-- 2) ÖĞÜN LİSTESİ BÖLÜMÜ    -->
+    <!-- ========================== -->
+    <div id="mealSection" class="section-hidden">
+        <div class="card meal-table-card">
+            <div class="card-body">
+
+                <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+
+                    <div>
+                        <h5 class="mb-1 fw-bold">Öğün Listesi</h5>
+                        <p class="text-muted mb-0">
+                            Seçtiğin tarihteki öğünlerini buradan görüntüleyebilir ve yeni öğün ekleyebilirsin.
+                        </p>
+                    </div>
+
+                    <!-- ⭐ YENİ: Öğün Listesi için tarih filtresi -->
+                    <form method="get" asp-action="Index"
+                          class="d-flex flex-wrap align-items-center gap-2">
+                        <label class="col-form-label-sm fw-semibold mb-0">Tarih:</label>
+
+                        <input type="date"
+                               name="date"
+                               value="@Model.Date.ToString("yyyy-MM-dd")"
+                               class="form-control form-control-sm"
+                               style="min-width:160px;" />
+
+                        <button type="submit" class="btn btn-outline-success btn-sm">
+                            Göster
+                        </button>
+                    </form>
+
+                    <div class="d-flex gap-2">
+                        <a asp-controller="Meal" asp-action="Create" class="btn btn-success btn-sm">
+                            Yeni Öğün (Manuel)
+                        </a>
+                        <a asp-controller="Meal" asp-action="UploadPhoto" class="btn btn-outline-success btn-sm">
+                            Fotoğraftan Öğün Ekle
+                        </a>
+                    </div>
+                </div>
+
+                @if (!(Model.Meals?.Any() ?? false))
+                {
+                    <div class="empty-meal-state text-center py-5">
+                        <div class="empty-icon mb-3">
+                            🥗
+                        </div>
+                        <h5 class="mb-2">Henüz bu tarih için kayıtlı öğünün yok</h5>
+                        <p class="text-muted mb-4">
+                            Güne başlarken kahvaltını ekleyerek kalori ve makro takibine başlayabilirsin.
+                        </p>
+                        <a asp-controller="Meal" asp-action="Create" class="btn btn-success px-4">
+                            İlk öğününü ekle
+                        </a>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width:60px;">#</th>
+                                    <th>Öğün</th>
+                                    <th style="width:120px;">Saat</th>
+                                    <th style="width:160px;">Toplam Kalori</th>
+                                    <th style="width:120px;" class="text-end">İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    var index = 1;
+                                }
+                                @foreach (var meal in Model.Meals)
+                                {
+                                    <tr>
+                                        <td>@index</td>
+                                        <td>@meal.MealType</td>
+                                        <td>@meal.MealDateTime.ToString("HH:mm")</td>
+                                        <td>@meal.TotalKcal kcal</td>
+
+                                        <!-- ✅ DETAY + SİL -->
+                                        <td class="text-end">
+                                            <a asp-controller="Meal"
+                                               asp-action="Details"
+                                               asp-route-id="@meal.Id"
+                                               class="btn btn-outline-primary btn-sm me-1">
+                                                Detay
+                                            </a>
+
+                                            <form asp-controller="Meal"
+                                                  asp-action="Delete"
+                                                  asp-route-id="@meal.Id"
+                                                  method="post"
+                                                  class="d-inline"
+                                                  onsubmit="return confirm('Bu öğünü silmek istediğine emin misin?');">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-outline-danger btn-sm">
+                                                    Sil
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    index++;
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+
+            </div>
         </div>
     </div>
+
 </div>
-
-<style>
-    /* Arka planı diğer sayfalarla eşitleyelim */
-    body {
-        background: radial-gradient(circle at top, #e9f9ef 0, #f6fff9 40%, #ffffff 100%);
-    }
-
-    .daily-page {
-        padding-top: 16px;
-        padding-bottom: 24px;
-    }
-
-    .daily-title {
-        font-weight: 700;
-        font-size: 1.8rem;
-        color: #1b2833;
-    }
-
-    .daily-subtitle {
-        font-size: 0.95rem;
-        color: #60727d;
-    }
-
-    .daily-date-form .daily-date-input {
-        min-width: 160px;
-    }
-
-    .daily-filter-btn {
-        border-radius: 999px;
-        padding-inline: 16px;
-        font-weight: 600;
-        background: linear-gradient(135deg, #2ecc71, #27ae60);
-        border: none;
-        box-shadow: 0 6px 14px rgba(39, 174, 96, 0.35);
-    }
-
-        .daily-filter-btn:hover {
-            background: linear-gradient(135deg, #29d66f, #1f9452);
-            box-shadow: 0 10px 22px rgba(39, 174, 96, 0.45);
-        }
-
-    /* Özet kartları */
-    .summary-card {
-        border-radius: 18px;
-        border: 1px solid #e1efe6;
-        box-shadow: 0 10px 26px rgba(0, 0, 0, 0.04);
-        background: #ffffff;
-    }
-
-    .summary-label {
-        font-size: 0.85rem;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        color: #7b8a93;
-        margin-bottom: 4px;
-    }
-
-    .summary-value {
-        font-weight: 700;
-        color: #1b2833;
-    }
-
-    .summary-subtext {
-        font-size: 0.85rem;
-        color: #7b8a93;
-    }
-
-    /* Grafik kartları */
-    .chart-card {
-        border-radius: 18px;
-        border: 1px solid #e1efe6;
-        box-shadow: 0 10px 26px rgba(0, 0, 0, 0.04);
-        background: #ffffff;
-    }
-
-    .chart-title {
-        font-size: 1rem;
-        font-weight: 600;
-        color: #1b2833;
-    }
-
-    /* Öğün tablosu kartı */
-    .meal-table-card {
-        border-radius: 18px;
-        border: 1px solid #e1efe6;
-        box-shadow: 0 10px 26px rgba(0, 0, 0, 0.04);
-        background: #ffffff;
-        margin-bottom: 8px;
-    }
-
-        .meal-table-card table thead th {
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            color: #7b8a93;
-        }
-
-        .meal-table-card tbody td {
-            font-size: 0.95rem;
-        }
-
-    @@media (max-width: 576px) {
-        .daily-header {
-            align-items: flex-start !important;
-        }
-
-        .daily-date-form {
-            width: 100%;
-            margin-top: 8px;
-        }
-
-            .daily-date-form .daily-date-input {
-                flex: 1 1 auto;
-            }
-
-        .daily-filter-btn {
-            width: 100%;
-            margin-top: 4px;
-        }
-    }
-</style>
 
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
-        // C# modelden JS değişkenlerine aktarma
+        // Modelden JS değişkenleri
         var totalKcal = @Model.TotalKcal;
         var targetKcal = @Model.TargetKcal;
         var protein = @Model.ProteinGr;
         var carb = @Model.CarbGr;
         var fat = @Model.FatGr;
 
-        // Kalori Bar Chart
-        var ctxBar = document.getElementById('kcalBarChart').getContext('2d');
-        var kcalBarChart = new Chart(ctxBar, {
-            type: 'bar',
-            data: {
-                labels: ['Alınan', 'Hedef'],
-                datasets: [{
-                    label: 'Kalori (kcal)',
-                    data: [totalKcal, targetKcal],
-                    backgroundColor: ['rgba(46, 204, 113, 0.7)', 'rgba(236, 240, 241, 0.9)'],
-                    borderColor: ['rgba(39, 174, 96, 1)', 'rgba(189, 195, 199, 1)'],
-                    borderWidth: 1,
-                    borderRadius: 6
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { display: false }
+        // BAR CHART
+        var barCanvas = document.getElementById('kcalBarChart');
+        if (barCanvas) {
+            var ctxBar = barCanvas.getContext('2d');
+            new Chart(ctxBar, {
+                type: 'bar',
+                data: {
+                    labels: ['Alınan', 'Hedef'],
+                    datasets: [{
+                        data: [totalKcal, targetKcal],
+                        backgroundColor: ['rgba(46, 204, 113, 0.7)', 'rgba(230, 230, 230, 0.7)'],
+                        borderRadius: 6
+                    }]
                 },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            stepSize: 200
-                        }
+                options: {
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true }
                     }
                 }
-            }
-        });
+            });
+        }
 
-        // Makro Pie Chart
-        var ctxPie = document.getElementById('macroPieChart').getContext('2d');
-        var macroPieChart = new Chart(ctxPie, {
-            type: 'pie',
-            data: {
-                labels: ['Protein (g)', 'Karbonhidrat (g)', 'Yağ (g)'],
-                datasets: [{
-                    data: [protein, carb, fat],
-                    backgroundColor: [
-                        'rgba(46, 204, 113, 0.85)',
-                        'rgba(52, 152, 219, 0.85)',
-                        'rgba(241, 196, 15, 0.85)'
-                    ],
-                    borderColor: [
-                        'rgba(39, 174, 96, 1)',
-                        'rgba(41, 128, 185, 1)',
-                        'rgba(243, 156, 18, 1)'
-                    ],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'bottom'
+        // PIE CHART
+        var pieCanvas = document.getElementById('macroPieChart');
+        if (pieCanvas) {
+            var ctxPie = pieCanvas.getContext('2d');
+            new Chart(ctxPie, {
+                type: 'pie',
+                data: {
+                    labels: ['Protein', 'Karbonhidrat', 'Yağ'],
+                    datasets: [{
+                        data: [protein, carb, fat],
+                        backgroundColor: [
+                            'rgba(46, 204, 113, 0.85)',
+                            'rgba(52, 152, 219, 0.85)',
+                            'rgba(241, 196, 15, 0.85)'
+                        ]
+                    }]
+                },
+                options: {
+                    plugins: {
+                        legend: { position: 'bottom' }
                     }
                 }
-            }
+            });
+        }
+
+        // =============================
+        // TAB GEÇİŞLERİ
+        // =============================
+        const tabButtons = document.querySelectorAll('.btn-view-toggle');
+        const summarySection = document.getElementById('summarySection');
+        const mealSection = document.getElementById('mealSection');
+
+        tabButtons.forEach(btn => {
+            btn.addEventListener('click', function (e) {
+                const target = this.dataset.target;
+
+                // Eğer data-target yoksa (Öğünlerim linki) JS tarafında hiçbir şey yapma
+                if (!target) {
+                    return;
+                }
+
+                e.preventDefault();
+
+                tabButtons.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+
+                if (target === 'summarySection') {
+                    summarySection.classList.remove('section-hidden');
+                    mealSection.classList.add('section-hidden');
+                } else if (target === 'mealSection') {
+                    summarySection.classList.add('section-hidden');
+                    mealSection.classList.remove('section-hidden');
+                }
+            });
         });
     </script>
 }
+
+<style>
+    body {
+        background: radial-gradient(circle at top, #e9f9ef 0, #f6fff9 40%, #ffffff 100%);
+    }
+
+    .dashboard-container {
+        padding-top: 16px;
+        padding-bottom: 24px;
+    }
+
+    .view-toggle-group {
+        border-radius: 999px;
+        background-color: #ecf5f0;
+        padding: 3px;
+    }
+
+    .btn-view-toggle {
+        border-radius: 999px !important;
+        border: none;
+        font-weight: 600;
+        padding-inline: 18px;
+        padding-block: 6px;
+        font-size: 0.9rem;
+        color: #4a5a55;
+        background: transparent;
+    }
+
+        .btn-view-toggle.active {
+            background: #ffffff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            color: #1b2833;
+        }
+
+    .section-hidden {
+        display: none;
+    }
+
+    .summary-main-card,
+    .chart-card,
+    .meal-table-card {
+        border-radius: 18px;
+        border: 1px solid #e1efe6;
+        box-shadow: 0 10px 26px rgba(0, 0, 0, 0.05);
+        background: #ffffff;
+    }
+
+    .summary-main-title {
+        font-weight: 700;
+        font-size: 1.6rem;
+        color: #1b2833;
+    }
+
+    .summary-main-subtext {
+        font-size: 0.95rem;
+        color: #60727d;
+    }
+
+    .summary-date-btn {
+        border-radius: 999px;
+        padding-inline: 16px;
+        background: linear-gradient(135deg, #2ecc71, #27ae60);
+        box-shadow: 0 6px 14px rgba(39, 174, 96, 0.35);
+        font-weight: 600;
+        border: none;
+    }
+
+        .summary-date-btn:hover {
+            background: linear-gradient(135deg, #29d66f, #1f9452);
+            box-shadow: 0 10px 22px rgba(39, 174, 96, 0.45);
+        }
+
+    .date-input {
+        min-width: 160px;
+    }
+
+    .macro-pill {
+        background: #f4f9f7;
+        padding: 10px 18px;
+        border-radius: 12px;
+        border: 1px solid #dceee3;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    }
+
+    .macro-label {
+        font-size: 0.75rem;
+        color: #78918b;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .macro-value {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #1b2833;
+    }
+
+    .mini-summary-card {
+        border-radius: 14px;
+        border: 1px solid #e1efe6;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
+    }
+
+    .mini-label {
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        color: #7b8a93;
+        letter-spacing: 0.05em;
+    }
+
+    .mini-value {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #1b2833;
+    }
+
+    .mini-sub {
+        font-size: 0.85rem;
+        color: #94a3a8;
+    }
+
+    .chart-title {
+        font-weight: 600;
+        color: #1b2833;
+    }
+
+    .chart-container {
+        width: 100%;
+        height: 260px;
+    }
+
+    .chart-container-pie canvas,
+    .chart-container-bar canvas {
+        max-height: 240px;
+    }
+
+    .empty-meal-state .empty-icon {
+        font-size: 40px;
+    }
+</style>

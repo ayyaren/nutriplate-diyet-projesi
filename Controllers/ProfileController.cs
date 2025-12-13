@@ -1,28 +1,48 @@
-﻿using System;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Nutriplate.Web.Services;
 using Nutriplate.Web.ViewModels;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace Nutriplate.Web.Controllers
 {
     [Authorize]
     public class ProfileController : Controller
     {
-        [HttpGet]
-        public IActionResult Edit()
+        private readonly IProfileService _profileService;
+
+        public ProfileController(IProfileService profileService)
         {
-            // Şimdilik dummy veri; ileride Ceren'in API'sinden gelecek.
-            var model = new ProfileViewModel
+            _profileService = profileService;
+        }
+
+        // -----------------------------------------------------
+        // GET: /Profile/Edit
+        //  -> JWT'yi cookie'den al
+        //  -> Node.js /api/profile'dan gerçek veriyi oku
+        // -----------------------------------------------------
+        [HttpGet]
+        public async Task<IActionResult> Edit()
+        {
+            var token = GetJwtTokenFromClaims();
+            if (string.IsNullOrEmpty(token))
             {
-                Name = User.Identity?.Name ?? "Bilinmeyen Kullanıcı",
-                Email = "yaren@example.com", // Gerçekte backend'den gelmeli
-                BirthDate = new DateTime(2000, 1, 1),
-                Gender = "Kadın",
-                HeightCm = 165,
-                WeightKg = 60,
-                ActivityLevel = "Orta",
-                DailyCalorieTarget = 2000
-            };
+                // Kullanıcı login değilse tekrar login'e gönder
+                return RedirectToAction("Login", "Account");
+            }
+
+            var model = await _profileService.GetProfileAsync(token);
+
+            // Eğer backend henüz boş ise, en azından email'i dolduralım
+            if (model == null)
+            {
+                model = new ProfileViewModel
+                {
+                    Name = User.Identity?.Name ?? string.Empty,
+                    Email = User.FindFirstValue(ClaimTypes.Email) ?? string.Empty
+                };
+            }
 
             if (TempData["Success"] != null)
             {
@@ -32,19 +52,45 @@ namespace Nutriplate.Web.Controllers
             return View(model);
         }
 
+        // -----------------------------------------------------
+        // POST: /Profile/Edit
+        //  -> ModelState kontrolü
+        //  -> Node.js /api/profile'a PUT at
+        // -----------------------------------------------------
         [HttpPost]
-        public IActionResult Edit(ProfileViewModel model)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(ProfileViewModel model)
         {
+            var token = GetJwtTokenFromClaims();
+            if (string.IsNullOrEmpty(token))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
             if (!ModelState.IsValid)
             {
                 return View(model);
             }
 
-            // TODO: Burada Ceren'in Profile API'sine (PUT /api/users/me) istek atılacak.
-            // Şimdilik sadece başarılı kabul ediyoruz.
-            TempData["Success"] = "Profil bilgileriniz güncellendi (şimdilik sahte).";
+            var success = await _profileService.UpdateProfileAsync(model, token);
+            if (!success)
+            {
+                ModelState.AddModelError(string.Empty, "Profil güncellenirken bir hata oluştu.");
+                return View(model);
+            }
 
+            TempData["Success"] = "Profil bilgileriniz başarıyla güncellendi.";
             return RedirectToAction("Edit");
+        }
+
+        // -----------------------------------------------------
+        // JWT'yi cookie içindeki claim'lerden okuyan helper
+        // -----------------------------------------------------
+        private string? GetJwtTokenFromClaims()
+        {
+            // Login olurken hangi claim'e yazdıysan önce onu dene
+            return User.FindFirst("JwtToken")?.Value
+                   ?? User.FindFirst("AccessToken")?.Value;
         }
     }
 }

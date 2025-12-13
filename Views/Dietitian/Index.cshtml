@@ -1,45 +1,59 @@
-﻿@model List<Nutriplate.Web.ViewModels.DietitianClientViewModel>
+﻿@model IEnumerable<Nutriplate.Web.ViewModels.DietitianClientViewModel>
 
 @{
     ViewData["Title"] = "Diyetisyen Paneli";
 }
 
-<h2>Diyetisyen Paneli</h2>
+<div class="container mt-4">
+    <h2 class="mb-3">Diyetisyen Paneli</h2>
+    <p class="text-muted mb-4">
+        Danışanlarının listesini görüntüleyebilir ve her birinin günlük özetini inceleyebilirsin.
+    </p>
 
-<p>Bu sayfaya sadece <strong>Dietitian</strong> rolündeki kullanıcılar erişebilir.</p>
+    @if (ViewBag.Error != null)
+    {
+        <div class="alert alert-danger">
+            @ViewBag.Error
+        </div>
+    }
 
-<ul>
-    <li>Danışanların günlük özetlerini görüntüleme</li>
-    <li>Öğün önerilerini düzenleme</li>
-    <li>Yorum ve geri bildirim yazma</li>
-</ul>
-
-<hr />
-
-<h4 class="mt-4">Danışan Listesi</h4>
-
-<table class="table table-hover mt-3">
-    <thead>
-        <tr>
-            <th>#</th>
-            <th>Danışan</th>
-            <th>E-posta</th>
-            <th>Güncel Kilo</th>
-            <th>Hedef Kilo</th>
-            <th>Son Güncelleme</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var c in Model)
-        {
+    <table class="table table-hover align-middle">
+        <thead class="table-light">
             <tr>
-                <td>@c.Id</td>
-                <td>@c.Name</td>
-                <td>@c.Email</td>
-                <td>@c.CurrentWeight kg</td>
-                <td>@c.TargetWeight kg</td>
-                <td>@c.LastUpdate.ToString("dd.MM.yyyy")</td>
+                <th>#</th>
+                <th>Danışan</th>
+                <th>E-posta</th>
+                <th style="width: 200px;">İşlemler</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                foreach (var c in Model)
+                {
+                    <tr>
+                        <td>@c.Id</td>
+                        <td>@c.Name</td>
+                        <td>@c.Email</td>
+                        <td>
+                            <a asp-controller="Dietitian"
+                               asp-action="ClientSummary"
+                               asp-route-id="@c.Id"
+                               class="btn btn-outline-success btn-sm">
+                                Günlük Özet
+                            </a>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="4" class="text-center text-muted">
+                        Henüz kayıtlı bir danışan görünmüyor.
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

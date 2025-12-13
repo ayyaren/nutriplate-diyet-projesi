@@ -1,22 +1,22 @@
-﻿@model Nutriplate.Web.ViewModels.LoginViewModel
+﻿@model Nutriplate.Web.ViewModels.RegisterViewModel
 
 @{
-    ViewData["Title"] = "Giriş Yap";
+    ViewData["Title"] = "Diyetisyen Kaydı";
 }
 
-<div class="login-wrapper d-flex justify-content-center align-items-center">
-    <div class="login-card shadow-lg">
+<div class="register-wrapper d-flex justify-content-center align-items-center">
+    <div class="register-card shadow-lg">
 
         <!-- Üst kısım: logo / başlık -->
         <div class="text-center mb-4">
-            <div class="login-logo d-inline-flex align-items-center justify-content-center mb-3">
+            <div class="register-logo d-inline-flex align-items-center justify-content-center mb-3">
                 <span class="fw-bold">N</span>
             </div>
             <h3 class="fw-semibold mb-1">
-                Tekrar hoş geldin <span class="ms-1">👋</span>
+                NutriPlate’a diyetisyen olarak katıl <span class="ms-1">👨‍⚕️</span>
             </h3>
             <p class="text-muted mb-0 small">
-                Günlük beslenmeni takip etmek için giriş yap.
+                Danışanlarının öğünlerini, kalori ve makrolarını kolayca takip et.
             </p>
         </div>
 
@@ -36,20 +36,30 @@
         }
 
         <!-- Mini bilgi satırı -->
-        <div class="login-tags d-flex justify-content-center gap-2 mb-4">
+        <div class="register-tags d-flex justify-content-center gap-2 mb-4">
             <span class="badge rounded-pill bg-light text-success border">
-                🥗 Dengeli öğünler
+                🎯 Hedef belirle
             </span>
             <span class="badge rounded-pill bg-light text-success border">
-                🔔 Hatırlatmalar
+                🥗 Danışan öğün takibi
             </span>
             <span class="badge rounded-pill bg-light text-success border d-none d-md-inline">
-                📈 İlerleme takibi
+                📊 Günlük özet ve raporlar
             </span>
         </div>
 
-        <form asp-action="Login" method="post" novalidate>
+        <!-- DİKKAT: DietitianRegister action'ına post ediyor -->
+        <form asp-action="DietitianRegister" method="post" novalidate>
             <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <!-- Ad Soyad -->
+            <div class="mb-3">
+                <label asp-for="Name" class="form-label">Ad Soyad</label>
+                <input asp-for="Name"
+                       class="form-control form-control-lg"
+                       placeholder="Dyt. Yaren Örnek" />
+                <span asp-validation-for="Name" class="text-danger small"></span>
+            </div>
 
             <!-- E-posta -->
             <div class="mb-3">
@@ -61,48 +71,59 @@
             </div>
 
             <!-- Şifre -->
-            <div class="mb-4">
+            <div class="mb-3">
                 <label asp-for="Password" class="form-label">Şifre</label>
                 <input asp-for="Password"
                        type="password"
                        class="form-control form-control-lg"
                        placeholder="••••••••" />
                 <span asp-validation-for="Password" class="text-danger small"></span>
+                <small class="text-muted d-block mt-1">
+                    En az 6 karakter, güçlü bir şifre seç.
+                </small>
             </div>
 
-            <!-- Giriş butonu -->
+            <!-- Şifre (Tekrar) -->
+            <div class="mb-4">
+                <label asp-for="ConfirmPassword" class="form-label">Şifre (Tekrar)</label>
+                <input asp-for="ConfirmPassword"
+                       type="password"
+                       class="form-control form-control-lg"
+                       placeholder="••••••••" />
+                <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+            </div>
+
+            <!-- Kayıt butonu -->
             <button type="submit"
-                    class="btn login-btn btn-lg w-100 mb-3">
-                Giriş Yap
+                    class="btn register-btn btn-lg w-100 mb-3">
+                Diyetisyen Olarak Kayıt Ol
             </button>
 
             <!-- Alt metin -->
             <p class="text-center text-muted mb-0">
-                Henüz hesabın yok mu?
-                <a asp-action="Register"
+                Zaten bir diyetisyen hesabın var mı?
+                <a asp-action="Login"
                    class="link-success text-decoration-none fw-semibold">
-                    Kayıt ol
+                    Giriş yap
                 </a>
             </p>
-          
-
         </form>
     </div>
 </div>
 
 <style>
-    /* Bu sayfanın arka planı (register ile aynı) */
+    /* Bu sayfanın arka planı */
     body {
         background: radial-gradient(circle at top, #e9f9ef 0, #f6fff9 40%, #ffffff 100%);
     }
 
-    .login-wrapper {
+    .register-wrapper {
         min-height: calc(100vh - 70px); /* navbar yüksekliğine göre ayarlayabilirsin */
         padding: 32px 16px;
     }
 
-    .login-card {
-        max-width: 480px;
+    .register-card {
+        max-width: 520px;
         width: 100%;
         background-color: #ffffff;
         border-radius: 24px;
@@ -112,7 +133,7 @@
         animation: fadeUp 0.5s ease-out;
     }
 
-    .login-logo {
+    .register-logo {
         width: 64px;
         height: 64px;
         border-radius: 50%;
@@ -122,7 +143,7 @@
         box-shadow: 0 10px 22px rgba(46, 204, 113, 0.5);
     }
 
-    .login-tags .badge {
+    .register-tags .badge {
         font-size: 0.75rem;
         padding: 0.4rem 0.75rem;
         background-color: #f4fbf6;
@@ -147,8 +168,8 @@
             box-shadow: 0 0 0 0.2rem rgba(46, 204, 113, 0.20);
         }
 
-    /* Giriş butonu */
-    .login-btn {
+    /* Kayıt butonu */
+    .register-btn {
         background: linear-gradient(135deg, #2ecc71, #27ae60);
         border: none;
         font-weight: 600;
@@ -158,7 +179,7 @@
         transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
     }
 
-        .login-btn:hover {
+        .register-btn:hover {
             transform: translateY(-1px);
             box-shadow: 0 12px 26px rgba(39, 174, 96, 0.45);
             background: linear-gradient(135deg, #29d66f, #1f9452);
@@ -167,12 +188,12 @@
 
     /* Küçük ekran uyumu */
     @@media (max-width: 576px) {
-        .login-card {
+        .register-card {
             padding: 26px 20px 22px;
             border-radius: 20px;
         }
 
-        .login-tags {
+        .register-tags {
             flex-wrap: wrap;
         }
     }

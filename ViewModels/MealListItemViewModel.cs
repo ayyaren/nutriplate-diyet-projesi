@@ -1,10 +1,16 @@
-﻿namespace Nutriplate.Web.ViewModels
+﻿using System;
+
+namespace Nutriplate.Web.ViewModels
 {
     public class MealListItemViewModel
     {
         public int Id { get; set; }
-        public string MealType { get; set; } = string.Empty;   // Kahvaltı, Öğle, Akşam...
+
+        // Kahvaltı, Öğle, Akşam, Atıştırmalık...
+        public string MealType { get; set; } = string.Empty;
+
         public DateTime MealDateTime { get; set; }
+
         public int TotalKcal { get; set; }
     }
 }

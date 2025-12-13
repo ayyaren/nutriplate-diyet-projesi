@@ -4,79 +4,129 @@
     ViewData["Title"] = "Öğün Detayı";
 }
 
-<h2>Öğün Detayı</h2>
+<div class="meal-page-container">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div>
+            <h2 class="fw-bold mb-1">Öğün Detayı</h2>
+            <p class="text-muted mb-0">
+                Bu sayfada seçtiğin öğündeki besinleri ve toplam kaloriyi görebilirsin.
+            </p>
+        </div>
 
-<div class="mb-3">
-    <strong>Öğün Türü:</strong> @Model.MealType <br />
-    <strong>Tarih / Saat:</strong> @Model.MealDateTime.ToString("dd.MM.yyyy HH:mm") <br />
-    <strong>Toplam Kalori:</strong> @Model.TotalKcal kcal
+        <div class="d-flex flex-wrap gap-2">
+            <a asp-controller="Meal"
+               asp-action="Index"
+               class="btn btn-outline-secondary btn-sm">
+                ⬅ Öğün listesine dön
+            </a>
+        </div>
+    </div>
+
+    <div class="card meal-card shadow-sm mb-4">
+        <div class="card-body">
+            <h5 class="fw-semibold mb-3">@Model.MealType</h5>
+
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="small text-muted">Tarih / Saat</div>
+                    <div class="fw-semibold">
+                        @Model.MealDateTime.ToString("dd.MM.yyyy HH:mm")
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="small text-muted">Toplam Kalori</div>
+                    <div class="fw-semibold">
+                        @Model.TotalKcal kcal
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="small text-muted">Not</div>
+                    <div>
+                        @if (!string.IsNullOrWhiteSpace(Model.Notes))
+                        {
+                            @Model.Notes
+                        }
+                        else
+                        {
+                            <span class="text-muted">Not eklenmemiş.</span>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card meal-card shadow-sm mb-4">
+        <div class="card-body">
+           
+
+            @if (Model.Items != null && Model.Items.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width:60px;">#</th>
+                                <th>Besin</th>
+                                <th style="width:120px;">Gram</th>
+                                <th style="width:140px;">Kalori (kcal)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (int i = 0; i < Model.Items.Count; i++)
+                            {
+                                var item = Model.Items[i];
+                                <tr>
+                                    <td>@(i + 1)</td>
+                                    <td>@item.FoodName</td>
+                                    <td>@item.Gram g</td>
+                                    <td>@item.Kcal</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            
+        </div>
+    </div>
+
+    <div class="d-flex flex-wrap gap-2">
+        <!-- Aynı öğünü bugüne tekrar ekle -->
+        <a asp-controller="Meal"
+           asp-action="Create"
+           asp-route-fromId="@Model.Id"
+           class="btn btn-success">
+            Bu öğünü tekrar ekle
+        </a>
+
+        <!-- Benzer öğün: aynı verilerle formu aç -->
+        <a asp-controller="Meal"
+           asp-action="Create"
+           asp-route-fromId="@Model.Id"
+           asp-route-similar="true"
+           class="btn btn-outline-success">
+            Benzer öğün oluştur
+        </a>
+
+        <a asp-action="Index" class="btn btn-secondary ms-auto">
+            Öğün listesine dön
+        </a>
+    </div>
 </div>
 
-@if (!string.IsNullOrEmpty(Model.Notes))
-{
-    <div class="alert alert-info">
-        @Model.Notes
-    </div>
-}
+<style>
+    body {
+        background: radial-gradient(circle at top, #e9f9ef 0, #f6fff9 40%, #ffffff 100%);
+    }
 
-<h3>Yemekler</h3>
+    .meal-page-container {
+        padding-top: 16px;
+        padding-bottom: 32px;
+    }
 
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>#</th>
-            <th>Besin</th>
-            <th>Gram</th>
-            <th>Kalori (kcal)</th>
-        </tr>
-    </thead>
-    <tbody>
-        @for (int i = 0; i < Model.Items.Count; i++)
-        {
-            var item = Model.Items[i];
-            <tr>
-                <td>@(i + 1)</td>
-                <td>@item.FoodName</td>
-                <td>@item.Gram g</td>
-                <td>@item.Kcal</td>
-            </tr>
-        }
-    </tbody>
-</table>
-
-<hr />
-
-@{
-    var suggestions = ViewBag.Suggestions as IEnumerable<dynamic>;
-}
-
-@if (suggestions != null)
-{
-    <h3>Alternatif Yiyecek Önerileri</h3>
-    <p class="text-muted">
-        Bu öneriler, mevcut öğündeki bazı besinler için daha sağlıklı / daha dengeli alternatif örnekleridir.
-        Şimdilik örnek veri gösteriliyor; ileride ML & diyetisyen kurallarına göre gerçek öneriler üretilecek.
-    </p>
-
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>Mevcut Besin</th>
-                <th>Önerilen Alternatif</th>
-                <th>Neden?</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var s in suggestions)
-            {
-                <tr>
-                    <td>@s.Original</td>
-                    <td>@s.Alternative</td>
-                    <td>@s.Reason</td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
-
-<a asp-action="Index" class="btn btn-secondary mt-3">Öğün listesine dön</a>
+    .meal-card {
+        border-radius: 18px;
+        border: 1px solid #e1efe6;
+    }
+</style>
