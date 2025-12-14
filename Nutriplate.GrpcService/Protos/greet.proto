@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+option csharp_namespace = "Nutriplate.GrpcService";
+
+package bmi;
+
+// gRPC servisi
+service BmiCalculator {
+  rpc CalculateBmi (BmiRequest) returns (BmiReply);
+}
+
+// Ýstek: boy + kilo
+message BmiRequest {
+  double height = 1; // metre cinsinden boy
+  double weight = 2; // kilogram cinsinden kilo
+}
+
+// Cevap: bmi + kategori
+message BmiReply {
+  double bmi = 1;
+  string category = 2;
+}
